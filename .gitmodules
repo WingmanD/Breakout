@@ -1,0 +1,22 @@
+[submodule "Breakout/dependencies/glm"]
+	path = Breakout/dependencies/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "Breakout/dependencies/assimp"]
+	path = Breakout/dependencies/assimp
+	url = https://github.com/assimp/assimp.git
+[submodule "Breakout/dependencies/glad"]
+	path = Breakout/dependencies/glad
+	url = https://github.com/Dav1dde/glad.git
+	branch = c
+[submodule "Breakout/dependencies/glfw"]
+	path = Breakout/dependencies/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "Breakout/dependencies/stb"]
+	path = Breakout/dependencies/stb
+	url = https://github.com/nothings/stb.git
+[submodule "Breakout/dependencies/imgui"]
+	path = Breakout/dependencies/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "Breakout/dependencies/tinyxml"]
+	path = Breakout/dependencies/tinyxml
+	url = https://github.com/leethomason/tinyxml2.git
