@@ -51,7 +51,7 @@ bool Shader::readShader(std::filesystem::path path, ShaderType type, GLuint& sha
     }
 
     if (!exists(path)) {
-        std::cout << "Shader file " << path << " does not exist" << std::endl;
+        std::cerr << "Shader file " << path << " does not exist" << std::endl;
         return false;
     }
     

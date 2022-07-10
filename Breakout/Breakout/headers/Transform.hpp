@@ -5,6 +5,7 @@
 
 class Transform {
 public:
+    Transform* parent = nullptr;
     glm::vec3 Location = glm::vec3(0), Rotation = glm::vec3(0), Scale = glm::vec3(1);
 
     void setLocation(glm::vec3 newLocation) { Location = newLocation; }
@@ -17,4 +18,9 @@ public:
 
     [[nodiscard]] glm::mat4 getModelMatrix() const;
     [[nodiscard]] glm::mat4 getViewMatrix() const;
+
+    [[nodiscard]] glm::vec3 getGlobalLocation() const;
+    [[nodiscard]] glm::vec3 getGlobalRotation() const;
+protected:
+    void attachTo(Transform* newParent);
 };

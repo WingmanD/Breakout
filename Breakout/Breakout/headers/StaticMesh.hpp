@@ -18,8 +18,6 @@ struct Vertex {
     glm::vec3 normal = {0, 0, 0};
     glm::vec2 uv = {0, 0};
 
-    std::vector<Vertex*> connected;
-
     Vertex() = default;
 
     Vertex(int index, const float x, const float y, const float z) {
@@ -32,13 +30,6 @@ struct Vertex {
     Vertex(int index, glm::vec3 pos) {
         this->index = index;
         position = pos;
-    }
-
-    void addConnected(Vertex* v) {
-        if (std::ranges::find(connected, v) == connected.end()) {
-            connected.push_back(v);
-            v->addConnected(this);
-        }
     }
 };
 
@@ -76,7 +67,7 @@ struct BoundingBox {
 //todo shader should be a property
 class StaticMesh : public Transform {
     GLuint VAO{};
-    GLuint VBO[3]{};
+    GLuint VBO[4]{};
     GLuint EBO{};
 public:
     std::vector<unsigned int> indices;
@@ -94,12 +85,12 @@ public:
     [[nodiscard]] GLuint getEBO() const { return EBO; }
     [[nodiscard]] std::vector<glm::vec3> calculateNormals() const;
 
-    glm::vec3 getCenter() const;
-    float calculateVolume() const;
-    float calculateSurfaceArea() const;
+    [[nodiscard]] glm::vec3 getCenter() const;
+    [[nodiscard]] float calculateVolume() const;
+    [[nodiscard]] float calculateSurfaceArea() const;
 
     ~StaticMesh() {
-        glDeleteBuffers(3, VBO);
+        glDeleteBuffers(4, VBO);
         glDeleteBuffers(1, &EBO);
         glDeleteVertexArrays(1, &VAO);
     }

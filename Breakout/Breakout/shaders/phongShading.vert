@@ -2,7 +2,7 @@
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aCol;
 layout (location = 2) in vec3 aNormal;
-layout (location = 3) in vec3 aUV;
+layout (location = 3) in vec2 aUV;
 
 out vertexData {
     vec3 position;
@@ -21,5 +21,5 @@ void main()
     vertex.normal = normalize(normalMatrix * aNormal);
     gl_Position =  worldSpace;
 
-    vertex.texCoord = aUV.xy;
+    vertex.texCoord = aUV;
 }

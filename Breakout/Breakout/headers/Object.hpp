@@ -12,6 +12,8 @@
 class Object : public Transform {
 protected:
     Shader* shader;
+    std::vector<Object*> childObjects;
+    
 public:
     StaticMesh* mesh;
     Material* material;
@@ -29,6 +31,8 @@ public:
 
     virtual void drawSecondPass(Camera* camera, std::vector<Light*> &lights) { drawSecondPass(camera, static_cast<Transform>(*this),  lights); }
     virtual void drawSecondPass(Camera* camera, Transform instanceTransform, std::vector<Light*> &lights) { }
+
+    void attachToObject(Object* object);
 
     virtual ~Object() {
         delete mesh;

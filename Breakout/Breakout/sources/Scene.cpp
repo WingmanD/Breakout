@@ -12,7 +12,7 @@ void Scene::tick(double deltaTime) const { for (const auto& object : objects) { 
 Object* Scene::load(std::filesystem::path relativePath, Shader* shader, bool bLoadMaterials) {
     relativePath = Settings::getInstance().runtimePath / "resources" / relativePath;
 
-    if(!exists(relativePath)) {
+    if (!exists(relativePath)) {
         std::cout << "Scene::load: File " << relativePath << " does not exist" << std::endl;
         return nullptr;
     }
@@ -25,7 +25,7 @@ Object* Scene::load(std::filesystem::path relativePath, Shader* shader, bool bLo
                                              aiProcess_CalcTangentSpace |
                                              aiProcess_Triangulate |
                                              aiProcess_JoinIdenticalVertices |
-                                             aiProcess_SortByPType);
+                                             aiProcess_SortByPType | aiProcess_FlipUVs);
 
     if (!scene)
         std::cerr << importer.GetErrorString();
@@ -33,9 +33,9 @@ Object* Scene::load(std::filesystem::path relativePath, Shader* shader, bool bLo
     for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
         Material* material;
         if (scene->HasMaterials() && bLoadMaterials)
-            material = new Material(scene->mMaterials[scene->mMeshes[i]->mMaterialIndex]);
+            material = new Material(shader, scene->mMaterials[scene->mMeshes[i]->mMaterialIndex]);
         else
-            material = new Material();
+            material = new Material(shader);
 
         objects.emplace_back(new Object(new StaticMesh(scene->mMeshes[i]), material, shader));
     }

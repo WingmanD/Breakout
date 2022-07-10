@@ -9,15 +9,14 @@ in fragmentData {
 
 
 struct Light {
-    vec3 position;
-    vec3 color;
+    vec4 position;
+    vec4 color;
     float intensity;
 };
 
-layout(std430, binding = 0) buffer LightsBuffer {
-    uint lights_length;
+layout(std430, binding = 1) readonly buffer LightData {
     Light lights[];
-} lights;
+};
 
 uniform vec3 ambientColor;
 uniform vec3 diffuseColor;
@@ -25,16 +24,17 @@ uniform vec3 specularColor;
 uniform float shininess;
 uniform float opacity;
 
-/*uniform vec3 lightPosition;
-uniform vec3 lightColor;
-uniform float lightIntensity;*/
+layout (std140) uniform ViewData {
+    mat4 view;
+    mat4 projection;
 
-uniform vec3 cameraPos;
+    vec3 cameraPos;
+};
 
-uniform int useDiffuseMap;
+uniform int diffuseMapPresent;
 uniform sampler2D diffuseMap;
 
-uniform int useSpecularMap;
+uniform int specularMapPresent;
 uniform sampler2D specularMap;
 
 void main()
@@ -42,21 +42,50 @@ void main()
     vec3 n = fragment.normal;
     vec3 postion = fragment.position;
 
-    vec3 l = normalize(lightPosition - postion);
     vec3 v = normalize(cameraPos - postion);
-    vec3 r = reflect(-l, n);
 
     vec3 ambient = ambientColor * 0.05;
 
+    /*if (diffuseMapPresent == 1) diffuse = lightIntensity * lightColor * texture(diffuseMap, fragment.texCoord).xyz * max(dot(l, n), 0);
+    else diffuse = lightIntensity * lightColor * diffuseColor * max(dot(l, n), 0);*/
+
+    /*vec3 specular = vec3(0);
+    if (specularMapPresent == 1) specular = lightIntensity * lightColor * texture(specularMap, fragment.texCoord).xyz * pow(max(dot(r, v), 0), shininess);
+    else specular = lightIntensity * lightColor * specularColor * pow(max(dot(r, v), 0), shininess);*/
+
     vec3 diffuse = vec3(0);
-    if (useDiffuseMap == 1) diffuse = lightIntensity * lightColor * texture(diffuseMap, fragment.texCoord).xyz * max(dot(l, n), 0);
-    else diffuse = lightIntensity * lightColor * diffuseColor * max(dot(l, n), 0);
-
     vec3 specular = vec3(0);
-    if (useSpecularMap == 1) specular = lightIntensity * lightColor * texture(specularMap, fragment.texCoord).xyz * pow(max(dot(r, v), 0), shininess);
-    else specular = lightIntensity * lightColor * specularColor * pow(max(dot(r, v), 0), shininess);
 
+    for (uint i = 0; i < lights.length(); i++) {
+        Light light = lights[i];
+        vec3 l_orig = light.position.xyz - postion;
+
+
+        const float kc = 1.0;
+        const float kl = 0.09;
+        const float kq = 0.032;
+
+        float dl = length(l_orig);
+
+        float denominator = kc + kl * dl + kq * dl * dl;
+
+        vec3 l = normalize(l_orig);
+        vec3 r = reflect(-l, n);
+
+        vec3 h = normalize(l + v);
+
+        diffuse += light.intensity * light.color.xyz * max(dot(l, n), 0) / denominator;
+        specular += light.intensity * light.color.xyz * pow(max(dot(h, n), 0), shininess) / denominator;
+    }
+
+    if (diffuseMapPresent == 1) diffuse *= texture(diffuseMap, fragment.texCoord).xyz;
+    else diffuse *= diffuseColor;
+
+    if (specularMapPresent == 1) specular *= texture(specularMap, fragment.texCoord).xyz;
+    else specular *= specularColor;
+
+    //diffuse = texture(diffuseMap, fragment.texCoord).xyz;
     vec3 color = ambient + diffuse + specular;
 
-    FragColor = vec4(color, 1);
+    FragColor = vec4(color, opacity);
 } 
