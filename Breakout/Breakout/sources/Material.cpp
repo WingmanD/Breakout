@@ -23,14 +23,13 @@ void Material::setup() {
     apply();
 
     for (auto& [type, texture] : textures) setupTexture(texture);
+
+    applyTextures();
 }
 
 void Material::setTextureMap(TextureType type, const std::filesystem::path& path) {
-
-    textures[type] = Texture2D(path, type);
-    std::cout << "Set texture map " << TextureTypeNames[type] << " to " << path << std::endl;
+    textures[type] = new Texture2D(path, type);
     setupTexture(textures[type]);
-
 }
 
 void Material::apply() {
@@ -47,7 +46,7 @@ void Material::apply() {
 void Material::applyTextures() {
     for (int i = 0; i < textures.size(); i++) {
         glActiveTexture(GL_TEXTURE0 + i);
-        glBindTexture(GL_TEXTURE_2D, textures[static_cast<TextureType>(i)].ID);
+        glBindTexture(GL_TEXTURE_2D, textures[static_cast<TextureType>(i)]->ID);
     }
 }
 
@@ -65,12 +64,12 @@ void Material::loadTextures(const aiMaterial* material, const std::filesystem::p
     }
 }
 
-void Material::setupTexture(Texture2D& texture) {
+void Material::setupTexture(Texture2D* texture) {
     shader->use();
     
-    glActiveTexture(GL_TEXTURE0 + texture.type);
-    glBindTexture(GL_TEXTURE_2D, texture.ID);
+    glActiveTexture(GL_TEXTURE0 + texture->type);
+    glBindTexture(GL_TEXTURE_2D, texture->ID);
     
-    glUniform1i(glGetUniformLocation(shader->ID, TextureTypeNames[texture.type].c_str()), texture.type);
-    glUniform1i(glGetUniformLocation(shader->ID, std::string(TextureTypeNames[texture.type] + "Present").c_str()), 1);
+    glUniform1i(glGetUniformLocation(shader->ID, TextureTypeNames[texture->type].c_str()), texture->type);
+    glUniform1i(glGetUniformLocation(shader->ID, std::string(TextureTypeNames[texture->type] + "Present").c_str()), 1);
 }

@@ -40,30 +40,29 @@ struct Texture2D {
 
     Texture2D(const std::filesystem::path& path, TextureType type) {
         this->type = type;
-        
-        data = std::make_unique<unsigned char*>(stbi_load(path.string().c_str(), &width, &height, &channels, 0));
-        
-        if (data) {
-            glGenTextures(1, &ID);
-            
-            
-            glActiveTexture(GL_TEXTURE0 + type);
-            
-            glBindTexture(GL_TEXTURE_2D, ID);
 
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, *data);
-            
-            glGenerateMipmap(GL_TEXTURE_2D);
-            
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            
-            glBindTexture(GL_TEXTURE_2D, 0);
-        }
-        else throw std::runtime_error("Failed to load texture: " + path.string());
+        data = std::make_unique<unsigned char*>(stbi_load(path.string().c_str(), &width, &height, &channels, 0));
+
+        if (!data || width == 0 || height == 0)
+            std::cerr << "Failed to load texture: " << path << std::endl;
+        
+        glGenTextures(1, &ID);
+
+        glActiveTexture(GL_TEXTURE0 + type);
+
+        glBindTexture(GL_TEXTURE_2D, ID);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, *data);
+
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 };
 
@@ -80,21 +79,65 @@ class Material {
     float shininess = 5;
     float opacity = 1;
 
-    std::map<TextureType, Texture2D> textures;
+    std::map<TextureType, Texture2D*> textures;
 
 public:
     explicit Material(Shader* shader, const aiMaterial* material, const std::filesystem::path& scenePath = "");
+
     Material(Shader* shader) : shader(shader) {}
 
-    //todo shader getter and setter with binding
+    Material(const Material& other) = default;
+
+    Material(Material&& other) noexcept
+        : name(std::move(other.name)),
+          shader(other.shader),
+          ambient(other.ambient),
+          diffuse(other.diffuse),
+          specular(other.specular),
+          emissive(other.emissive),
+          shininess(other.shininess),
+          opacity(other.opacity),
+          textures(other.textures) {}
+
+    Material& operator=(const Material& other) {
+        if (this == &other)
+            return *this;
+        name = other.name;
+        shader = other.shader;
+        ambient = other.ambient;
+        diffuse = other.diffuse;
+        specular = other.specular;
+        emissive = other.emissive;
+        shininess = other.shininess;
+        opacity = other.opacity;
+        textures = other.textures;
+        return *this;
+    }
+
+    Material& operator=(Material&& other) noexcept {
+        if (this == &other)
+            return *this;
+        name = std::move(other.name);
+        shader = other.shader;
+        ambient = other.ambient;
+        diffuse = other.diffuse;
+        specular = other.specular;
+        emissive = other.emissive;
+        shininess = other.shininess;
+        opacity = other.opacity;
+        textures = other.textures;
+        return *this;
+    }
+
     void apply();
-void applyTextures();
-    
+    void applyTextures();
+
     void setup();
 
     void setTextureMap(TextureType type, const std::filesystem::path& path);
-    
+
     [[nodiscard]] std::string getName() const { return name; }
+    [[nodiscard]] Shader* getShader() const { return shader; }
     [[nodiscard]] glm::vec3 getAmbientColor() const { return ambient; }
     [[nodiscard]] glm::vec3 getDiffuseColor() const { return diffuse; }
     [[nodiscard]] glm::vec3 getSpecularColor() const { return specular; }
@@ -104,14 +147,14 @@ void applyTextures();
 
     //todo send to shader as well
     void setName(const std::string& newName) { this->name = newName; }
-    void setAmbient(const glm::vec3& newAmbient) {
-        this->ambient = newAmbient;
-    }
+    void setAmbient(const glm::vec3& newAmbient) { this->ambient = newAmbient; }
+
     void setDiffuse(const glm::vec3& newDiffuse) {
         this->diffuse = newDiffuse;
         shader->use();
         glUniform3fv(glGetUniformLocation(shader->ID, "diffuseColor"), 1, &diffuse[0]);
     }
+
     void setSpecular(const glm::vec3& newSpecular) { this->specular = newSpecular; }
     void setEmissive(const glm::vec3& newEmissive) { this->emissive = newEmissive; }
     void setShininess(float newShininess) { this->shininess = newShininess; }
@@ -119,6 +162,6 @@ void applyTextures();
 
 private:
     void loadTextures(const aiMaterial* material, const std::filesystem::path& textureDirPath);
-    void setupTexture( Texture2D& texture);
-    
+    void setupTexture(Texture2D* texture);
+
 };

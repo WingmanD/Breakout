@@ -84,7 +84,10 @@ void main()
     if (specularMapPresent == 1) specular *= texture(specularMap, fragment.texCoord).xyz;
     else specular *= specularColor;
 
-    //diffuse = texture(diffuseMap, fragment.texCoord).xyz;
+    // todo remove this (unlit)
+    if (diffuseMapPresent == 1) diffuse = texture(diffuseMap, fragment.texCoord).xyz;
+    else diffuse = diffuseColor;
+
     vec3 color = ambient + diffuse + specular;
 
     FragColor = vec4(color, opacity);

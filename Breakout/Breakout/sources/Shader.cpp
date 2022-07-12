@@ -1,3 +1,5 @@
+#define STB_IMAGE_IMPLEMENTATION
+
 #include "Shader.hpp"
 
 #include <fstream>
@@ -5,7 +7,6 @@
 
 #include <glad/glad.h>
 
-#include "Settings.hpp"
 
 void Shader::checkCompilerErrors(unsigned int shader, ShaderType type) {
     int success;
@@ -84,9 +85,7 @@ Shader::Shader(std::filesystem::path path) {
     ID = glCreateProgram();
 
     GLuint vertexShader, fragmentShader, geometryShader;
-
-    path = Settings::getInstance().runtimePath / "shaders" / path;
-
+    
     if (readShader(path, VERTEX, vertexShader))
         glAttachShader(ID, vertexShader);
     if (readShader(path, GEOMETRY, geometryShader))

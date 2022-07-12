@@ -1,9 +1,11 @@
 #include "Renderer.hpp"
 
+#include <iostream>
+
 #include "glm/mat4x4.hpp"
 #include <glm/gtc/type_ptr.hpp>
 
-Renderer::Renderer(Scene* scene, Camera* camera): camera(camera), scene(scene) {
+Renderer::Renderer(Scene* scene): scene(scene) {
     initViewData();
     initLightData();
 }
@@ -12,9 +14,9 @@ void Renderer::render() const {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     updateViewData();
+    updateLightData();
 
-    for (const auto& object : scene->objects) object->drawFirstPass(camera, scene->lights);
-    for (const auto& object : scene->objects) object->drawSecondPass(camera, scene->lights);
+    for (const auto& object : scene->getObjects()) object->draw();
 }
 
 inline void Renderer::initViewData() {
@@ -24,15 +26,19 @@ inline void Renderer::initViewData() {
     glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec3), nullptr, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    glBindBufferRange(GL_UNIFORM_BUFFER, 0, UBO_ViewData, 0, 2 * sizeof(glm::mat4) + sizeof(glm::vec3));
+    glBindBufferRange(GL_UNIFORM_BUFFER, 0, UBO_ViewData, 0, 2 * sizeof(glm::mat4) + sizeof(glm::vec4));
 }
 
 inline void Renderer::updateViewData() const {
+    if (!scene || !scene->getActiveCamera()) return;
+    const auto camera = scene->getActiveCamera();
+
     glBindBuffer(GL_UNIFORM_BUFFER, UBO_ViewData);
 
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), value_ptr(camera->getViewMatrix()));
     glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), value_ptr(camera->getProjectionMatrix()));
-    glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::vec3), value_ptr(camera->Location));
+    glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::vec4),
+                    value_ptr(glm::vec4(camera->Location, 1.0f)));
 
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
@@ -46,10 +52,11 @@ inline void Renderer::initLightData() {
 }
 
 inline void Renderer::updateLightData() const {
-    if (scene->lights.empty()) return;
+    auto lights = scene->getLights();
+    if (lights.empty()) return;
     std::vector<LightDataEntry> lightData;
-    lightData.reserve(scene->lights.size());
-    for (const auto light : scene->lights)
+    lightData.reserve(lights.size());
+    for (const auto light : lights)
         lightData.emplace_back(glm::vec4(light->Location, 1),
                                glm::vec4(light->getColor(), 1),
                                light->getIntensity());

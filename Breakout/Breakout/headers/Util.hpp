@@ -9,11 +9,13 @@
 #include <glm/ext/quaternion_geometric.hpp>
 
 #include "Object.hpp"
+#include "StaticMesh.hpp"
 #include "GLFW/glfw3.h"
+
 
 class Util {
 public:
-    static bool isPointInsideObject(Object* obj, glm::vec3 point) {
+    /*static bool isPointInsideObject(Object* obj, glm::vec3 point) {
         std::default_random_engine generator(glfwGetTime());
         const std::uniform_real_distribution<float> distribution(0.0, 1.0);
 
@@ -30,9 +32,10 @@ public:
         }
 
         return count % 2 != 0;
-    }
+    }*/
 
-    struct RayTriangleIntersectionResult {
+
+    /*struct RayTriangleIntersectionResult {
         bool intersected = false;
         glm::vec3 intersectionPoint = glm::vec3(0);
     };
@@ -83,11 +86,29 @@ public:
         result.intersectionPoint = intersection;
 
         return result;
+    }*/
+
+    static std::vector<std::string> split(const std::string& input, char delimiter) {
+        std::vector<std::string> out;
+        std::stringstream ss(input);
+        std::string tmp;
+
+        while (getline(ss, tmp, delimiter)) out.push_back(tmp);
+        return out;
+    }
+
+    static std::string trim(const std::string& str) {
+        size_t first = str.find_first_not_of(' ');
+        if (std::string::npos == first) return str;
+        
+        size_t last = str.find_last_not_of(' ');
+        
+        return str.substr(first, (last - first + 1));
     }
 
     static float tetrahedronVolume(const Triangle& triangle, const glm::vec3& top) {
-        return (1.0f / 6.0f) * glm::abs(dot(triangle.v0->position - top,
-                                            cross(triangle.v1->position - top, triangle.v2->position - top)));
+        return (1.0f / 6.0f) * glm::abs(glm::dot(triangle.v0->position - top,
+                                                 glm::cross(triangle.v1->position - top, triangle.v2->position - top)));
     }
 
 };

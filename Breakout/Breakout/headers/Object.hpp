@@ -1,41 +1,47 @@
 #pragma once
 
-#include <functional>
+#include <vector>
 
-#include "Camera.hpp"
-#include "Light.hpp"
-#include "Material.hpp"
-#include "StaticMesh.hpp"
-#include "Shader.hpp"
+#include "Component.hpp"
+#include "Drawable.hpp"
+#include "SceneComponent.hpp"
 #include "Transform.hpp"
 
-class Object : public Transform {
+class Engine;
+
+class Object : public Transform, public Drawable {
 protected:
-    Shader* shader;
-    std::vector<Object*> childObjects;
-    
+    Engine* engine;
+
+    std::vector<SceneComponent*> childSceneComponents;
+    std::vector<Component*> childLogicComponents;
 public:
-    StaticMesh* mesh;
-    Material* material;
-    
-    bool bHasCollision = true;
+    Object(Engine* owner): engine(owner) {}
 
-    Object(StaticMesh* mesh, Material* material, Shader* shader)
-        : shader(shader), mesh(mesh), material(material) {}
+    virtual void tick(double deltaTime) {}
 
-    std::function<void(double)> tickFunction;
-    virtual void tick(double deltaTime) { if (tickFunction) tickFunction(deltaTime); }
+    void init() override {}
+    void draw() override;
+    void draw(const Transform& transform) override {}
 
-    virtual void drawFirstPass(Camera* camera, std::vector<Light*> &lights) { drawFirstPass(camera, static_cast<Transform>(*this),  lights); }
-    virtual void drawFirstPass(Camera* camera, Transform instanceTransform, std::vector<Light*> &lights);
+    void addSceneComponent(SceneComponent* component) {
+        childSceneComponents.emplace_back(component);
+        component->attachComponentToObject(this);
+    }
 
-    virtual void drawSecondPass(Camera* camera, std::vector<Light*> &lights) { drawSecondPass(camera, static_cast<Transform>(*this),  lights); }
-    virtual void drawSecondPass(Camera* camera, Transform instanceTransform, std::vector<Light*> &lights) { }
+    void addLogicComponent(Component* component) {
+        childLogicComponents.emplace_back(component);
+        component->attachComponentToObject(this);
+    }
 
-    void attachToObject(Object* object);
+    void removeComponent(Component* component) {
+        component->detach();
+        std::erase(childSceneComponents, component);
+        std::erase(childLogicComponents, component);
+    }
 
     virtual ~Object() {
-        delete mesh;
-        delete shader;
+        delete[] childSceneComponents.data();
+        delete[] childLogicComponents.data();
     }
 };

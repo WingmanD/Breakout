@@ -2,23 +2,31 @@
 
 #include <vector>
 
+#include "Camera.hpp"
+#include "Light.hpp"
 #include "Object.hpp"
 
 class Scene {
-public:
     std::vector<Object*> objects;
     std::vector<Light*> lights;
-    
-    Camera* activeCamera;
 
-    Scene(Camera* camera) : activeCamera(camera) {}
+    Camera* activeCamera = nullptr;
+public:
+    Scene() = default;
 
     void tick(double deltaTime) const;
 
-    Object* load(std::filesystem::path path, Shader* shader, bool bLoadMaterials = true);
-
     void addObject(Object* object);
     void addLight(Light* light);
+
+    void removeObject(Object* object);
+    void removeLight(Light* light);
+
+    [[nodiscard]] Camera* getActiveCamera() const { return activeCamera; }
+    void setActiveCamera(Camera* camera) { activeCamera = camera; }
+
+    [[nodiscard]] std::vector<Object*> getObjects() const { return objects; }
+    [[nodiscard]] std::vector<Light*> getLights() const { return lights; }
 
     ~Scene();
 };

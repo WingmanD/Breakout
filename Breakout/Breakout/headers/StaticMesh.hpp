@@ -7,7 +7,8 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
-#include "Camera.hpp"
+#include "Drawable.hpp"
+#include "Material.hpp"
 #include "Shader.hpp"
 #include "assimp/mesh.h"
 
@@ -59,13 +60,11 @@ struct Triangle {
     }
 };
 
-// todo remove
 struct BoundingBox {
     glm::vec3 min, max;
 };
 
-//todo shader should be a property
-class StaticMesh : public Transform {
+class StaticMesh : public Drawable {
     GLuint VAO{};
     GLuint VBO[4]{};
     GLuint EBO{};
@@ -74,12 +73,62 @@ public:
     std::vector<Vertex> vertices;
     std::vector<Triangle> triangles;
 
-    StaticMesh(aiMesh* meshData);
+    Material* material;
 
-    [[nodiscard]] BoundingBox getModelSpaceBoundingBox() const;
+    StaticMesh(const aiMesh* mesh, Material* material);
 
-    void applyTransform(Camera* camera, Transform instanceTransform, Shader* shader) const;
+    StaticMesh(const StaticMesh& other)
+        : Drawable(other),
+          indices(other.indices),
+          vertices(other.vertices),
+          triangles(other.triangles) {
+        material = new Material(*other.material);
+        StaticMesh::init();
+    }
 
+    StaticMesh(StaticMesh&& other) noexcept
+        : Drawable(std::move(other)),
+          indices(std::move(other.indices)),
+          vertices(std::move(other.vertices)),
+          triangles(std::move(other.triangles)) {
+
+        material = new Material(*other.material);
+        StaticMesh::init();
+    }
+
+    StaticMesh& operator=(const StaticMesh& other) {
+        if (this == &other)
+            return *this;
+        Drawable::operator =(other);
+        indices = other.indices;
+        vertices = other.vertices;
+        triangles = other.triangles;
+        material = new Material(*other.material);
+        StaticMesh::init();
+        return *this;
+    }
+
+    StaticMesh& operator=(StaticMesh&& other) noexcept {
+        if (this == &other)
+            return *this;
+        indices = std::move(other.indices);
+        vertices = std::move(other.vertices);
+        triangles = std::move(other.triangles);
+        material = new Material(*other.material);
+
+        StaticMesh::init();
+
+        return *this;
+    }
+
+    static std::vector<StaticMesh*> batchImport(const std::filesystem::path& path, Material* materialOverride = nullptr,
+                                                Shader* shaderOverride = nullptr);
+
+    void init() override;
+    void draw() override;
+    void draw(const Transform& transform) override;
+
+    [[nodiscard]] BoundingBox getBoundingBox() const;
     [[nodiscard]] std::vector<unsigned> getIndices() const { return indices; }
     [[nodiscard]] GLuint getVAO() const { return VAO; }
     [[nodiscard]] GLuint getEBO() const { return EBO; }
@@ -94,4 +143,5 @@ public:
         glDeleteBuffers(1, &EBO);
         glDeleteVertexArrays(1, &VAO);
     }
+
 };

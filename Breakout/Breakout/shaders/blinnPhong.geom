@@ -27,10 +27,10 @@ void main() {
     vec3 triangleCenter = (gl_in[0].gl_Position + gl_in[1].gl_Position + gl_in[2].gl_Position).xyz / 3.0;
     vec3 cameraDir = normalize(cameraPos - triangleCenter);
 
-    if (dot(normal, cameraDir) < 0.0) {
+    /*if (dot(normal, cameraDir) < 0.0) {
         EndPrimitive();
         return;
-    }
+    }*/
 
     for (int i = 0; i < 3; i++) {
         gl_Position = projection * view * gl_in[i].gl_Position;

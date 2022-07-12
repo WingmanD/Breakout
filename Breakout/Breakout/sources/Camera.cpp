@@ -1,19 +1,25 @@
 #include "Camera.hpp"
 
+#include <iostream>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
-Camera::Camera(glm::vec3 eyeLocation, glm::vec3 center) {
+Camera::Camera(int* width, int* height, glm::vec3 eyeLocation, glm::vec3 center) : center(center), width(width),
+    height(height) {
     Location = eyeLocation;
-    this->center = center;
 
     front = center - eyeLocation;
     focalDistance = length(front);
 
     front = normalize(front);
-    right = normalize(cross(front, worldUp));
+
+    if (front == -worldUp) { right = normalize(cross(front, {0, 0, -1})); }
+    else
+        right = normalize(cross(front, worldUp));
+
     viewUp = normalize(cross(right, front));
 }
+
 
 void Camera::rotate(glm::vec3 rot) {
     glm::mat4 rM = glm::mat4(1.0f);
@@ -37,14 +43,12 @@ void Camera::rotate(glm::vec3 rot) {
 glm::mat4 Camera::getViewMatrix() {
     right = normalize(cross(front, viewUp));
     viewUp = normalize(cross(right, front));
-    glm::mat4 view = lookAt(Location, Location + front, viewUp);
 
-    return view;
+    return lookAt(Location, Location + front, viewUp);;
 }
 
-glm::mat4 Camera::getProjectionMatrix() {
-    // todo cache aspect ratio in setters
-    float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+glm::mat4 Camera::getProjectionMatrix() const {
+    const float aspectRatio = static_cast<float>(*width) / static_cast<float>(*height);
 
     return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
 }
