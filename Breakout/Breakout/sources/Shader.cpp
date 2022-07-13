@@ -34,7 +34,7 @@ void Shader::init(std::filesystem::path path) {
 
     glUniformBlockBinding(ID, viewBlockIndex, 0);
 
-    std::cout << "Shader initialized ID: " << ID << std::endl;
+    //std::cout << "Shader initialized ID: " << ID << std::endl;
 }
 
 

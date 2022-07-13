@@ -6,7 +6,7 @@
 
 Camera::Camera(int* width, int* height, glm::vec3 eyeLocation, glm::vec3 center) : center(center), width(width),
     height(height) {
-    Location = eyeLocation;
+    setLocation(eyeLocation);
 
     front = center - eyeLocation;
     focalDistance = length(front);
@@ -44,7 +44,7 @@ glm::mat4 Camera::getViewMatrix() {
     right = normalize(cross(front, viewUp));
     viewUp = normalize(cross(right, front));
 
-    return lookAt(Location, Location + front, viewUp);;
+    return lookAt(getLocation(), getLocation() + front, viewUp);
 }
 
 glm::mat4 Camera::getProjectionMatrix() const {

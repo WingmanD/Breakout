@@ -11,9 +11,10 @@ class SceneComponent : public Component, public Transform, public Drawable {
 public:
     SceneComponent() = default;
 
-    void attachComponentToComponent(SceneComponent* component) {
-        this->parent = component;
-        component->childComponents.emplace_back(this);
-    }
+    void draw() override;
+    void draw(const Transform& transform) override;
 
+    void attachComponentToComponent(SceneComponent* component);
+
+    void attachComponentToObject(Object* newOwner) override;
 };

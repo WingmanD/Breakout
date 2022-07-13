@@ -10,12 +10,13 @@ public:
 
     virtual void tick() {}
 
-    void attachComponentToObject(Object* newParent) {
-        this->owner = newParent;
+    virtual void attachComponentToObject(Object* newOwner) {
+        this->owner = newOwner;
     }
+    
     void detach() { this->owner = nullptr; }
 
-    [[nodiscard]] Object* getParent() const { return owner; }
+    [[nodiscard]] Object* getOwner() const { return owner; }
 
     virtual ~Component() = default;
 };

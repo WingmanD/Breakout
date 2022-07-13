@@ -152,10 +152,12 @@ class BreakoutBoard : public Player {
     std::map<std::string, StaticMesh*> brickNameSMeshMap;
     std::vector<std::vector<Brick*>> bricks;
 
-    SceneComponent* player = nullptr;
+    StaticMeshComponent* player = nullptr;
 
+    StaticMesh* ballMesh = nullptr;
+    
     float boardWidth = 0;
-
+    std::vector<Ball*> balls;
 
 public:
     BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& level);
@@ -165,4 +167,8 @@ public:
     void onKey(int key, int scancode, int action, int mods) override;
 
     void onMouseMove(double xpos, double ypos) override;
+
+private:
+    void spawnBall();
+    void checkCollision(Ball* ball);
 };

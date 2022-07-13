@@ -3,7 +3,7 @@
 #include <glm/vec3.hpp>
 
 Light::Light(glm::vec3 position, glm::vec3 color, float intensity) {
-    Location = position;
+    setLocation(position);
     this->color = color;
     this->intensity = intensity;
 }

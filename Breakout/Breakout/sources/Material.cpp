@@ -37,7 +37,7 @@ void Material::setTextureMap(TextureType type, const std::filesystem::path& path
 void Material::apply() {
     shader->use();
 
-    std::cout << "Applying material with shader: " << shader->ID << std::endl;
+    //std::cout << "Applying material with shader: " << shader->ID << std::endl;
 
     glUniform3fv(glGetUniformLocation(shader->ID, "ambientColor"), 1, &ambient[0]);
     glUniform3fv(glGetUniformLocation(shader->ID, "diffuseColor"), 1, &diffuse[0]);

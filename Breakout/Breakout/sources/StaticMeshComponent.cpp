@@ -1,9 +1,14 @@
 ﻿#include "StaticMeshComponent.hpp"
 
-void StaticMeshComponent::draw() { draw(static_cast<Transform>(this)); }
+void StaticMeshComponent::draw() {
+    SceneComponent::draw();
+    draw(*this);
+}
 
 
 void StaticMeshComponent::draw(const Transform& transform) {
+    SceneComponent::draw(transform);
+
     if (mesh) mesh->draw(transform);
 }
 

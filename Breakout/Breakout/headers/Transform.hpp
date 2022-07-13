@@ -4,9 +4,13 @@
 #include <glm/vec3.hpp>
 
 class Transform {
-public:
     Transform* parent = nullptr;
     glm::vec3 Location = glm::vec3(0), Rotation = glm::vec3(0), Scale = glm::vec3(1);
+public:
+    [[nodiscard]] Transform* getParent() const { return parent; }
+    [[nodiscard]] glm::vec3 getLocation() const { return Location; }
+    [[nodiscard]] glm::vec3 getRotation() const { return Rotation; }
+    [[nodiscard]] glm::vec3 getScale() const { return Scale; }
 
     void setLocation(glm::vec3 newLocation) { Location = newLocation; }
     void setRotation(glm::vec3 newRotation) { Rotation = newRotation; }

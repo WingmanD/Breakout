@@ -38,7 +38,7 @@ inline void Renderer::updateViewData() const {
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), value_ptr(camera->getViewMatrix()));
     glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), value_ptr(camera->getProjectionMatrix()));
     glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::vec4),
-                    value_ptr(glm::vec4(camera->Location, 1.0f)));
+                    value_ptr(glm::vec4(camera->getLocation(), 1.0f)));
 
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
@@ -57,7 +57,7 @@ inline void Renderer::updateLightData() const {
     std::vector<LightDataEntry> lightData;
     lightData.reserve(lights.size());
     for (const auto light : lights)
-        lightData.emplace_back(glm::vec4(light->Location, 1),
+        lightData.emplace_back(glm::vec4(light->getLocation(), 1),
                                glm::vec4(light->getColor(), 1),
                                light->getIntensity());
 

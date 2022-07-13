@@ -73,7 +73,7 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
                                                         new Shader(engine->getRuntimePath() / "shaders/blinnPhong")));
     if (playerMeshImport.empty()) throw std::runtime_error("BreakoutBoard: player mesh not found");
     StaticMesh* playerMesh = playerMeshImport[0];
-    std::cout << "player mesh " << playerMesh->getIndices().size() << std::endl;
+
     playerMesh->getMaterial()->setTextureMap(
         DIFFUSE, engine->getRuntimePath() / "resources/meshes/player/MetalPipeWallRusty_albedo.png");
 
@@ -92,20 +92,21 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
                                                       new Shader(engine->getRuntimePath() / "shaders/blinnPhong")));
     if (ballMeshImport.empty()) throw std::runtime_error("BreakoutBoard: ball mesh not found");
 
-    StaticMesh* ballMesh = ballMeshImport[0];
+    ballMesh = ballMeshImport[0];
     ballMesh->getMaterial()->setTextureMap(
         DIFFUSE, engine->getRuntimePath() / "resources/meshes/sphere/2k_moon.jpg");
 
+    spawnBall();
 
-    auto camera = new Camera(engine->getWidthRef(), engine->getHeightRef(), this->Location + glm::vec3(0, 2, 0),
-                             this->Location);
+    auto camera = new Camera(engine->getWidthRef(), engine->getHeightRef(), this->getLocation() + glm::vec3(0, 2, 0),
+                             this->getLocation());
 
     float cameraDistance = std::max((totalBoardHeight * 1.3f) / std::tan(glm::radians(camera->getFov())),
                                     (boardWidth * 1.3f) / (static_cast<float>(engine->getWidth()) / static_cast<float>(
                                         engine->getHeight()) * std::tan(
                                         glm::radians(camera->getFov()))));
 
-    camera->setLocation(this->Location + glm::vec3(0, cameraDistance, 0));
+    camera->setLocation(this->getLocation() + glm::vec3(0, cameraDistance, 0));
 
     engine->getScene()->setActiveCamera(camera);
 
@@ -114,19 +115,39 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
 void BreakoutBoard::tick(double deltaTime) {}
 
 void BreakoutBoard::onKey(int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_S && action == GLFW_PRESS) { engine->getScene()->getActiveCamera()->move({0, 1, 0}); }
+    /*if (key == GLFW_KEY_S && action == GLFW_PRESS) { engine->getScene()->getActiveCamera()->move({0, 1, 0}); }
     else if (key == GLFW_KEY_W && action == GLFW_PRESS) { engine->getScene()->getActiveCamera()->move({0, -1, 0}); }
     else if (key == GLFW_KEY_A && action == GLFW_PRESS) { engine->getScene()->getActiveCamera()->move({-1, 0, 0}); }
     else if (key == GLFW_KEY_D && action == GLFW_PRESS) { engine->getScene()->getActiveCamera()->move({1, 0, 0}); }
     else if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) { engine->getScene()->getActiveCamera()->move({0, 0, 1}); }
     else if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS) {
         engine->getScene()->getActiveCamera()->move({0, 0, -1});
-    }
+    }*/
 }
 
 void BreakoutBoard::onMouseMove(double xpos, double ypos) {
     float newX = Util::clamp(0.05f, 0.95f, static_cast<float>(xpos) / static_cast<float>(engine->getWidth())) *
         boardWidth
         - boardWidth / 2.0f;
-    player->setLocation({newX, player->Location.y, player->Location.z});
+    player->setLocation({newX, player->getLocation().y, player->getLocation().z});
 }
+
+void BreakoutBoard::spawnBall() {
+    auto ball = new Ball(new StaticMeshComponent(new StaticMesh(*ballMesh)));
+
+    ball->meshComp->attachComponentToComponent(player);
+
+    auto playerAABB = player->getMesh()->getBoundingBox();
+    float playerHeight = playerAABB.max.y - playerAABB.min.y;
+
+    ball->meshComp->setLocation({
+        0.0f,
+        player->getLocation().y,
+        -(playerHeight / 2.0f + ball->radius * 2.0f)
+    });
+
+    balls.emplace_back(ball);
+
+}
+
+void BreakoutBoard::checkCollision(Ball* ball) {}
