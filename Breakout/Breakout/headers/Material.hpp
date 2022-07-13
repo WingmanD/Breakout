@@ -7,6 +7,8 @@
 #include "Shader.hpp"
 #include "assimp/material.h"
 #include <stb_image.h>
+#include <glm/vec2.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 enum TextureType {
     DIFFUSE,
@@ -45,7 +47,7 @@ struct Texture2D {
 
         if (!data || width == 0 || height == 0)
             std::cerr << "Failed to load texture: " << path << std::endl;
-        
+
         glGenTextures(1, &ID);
 
         glActiveTexture(GL_TEXTURE0 + type);
@@ -76,6 +78,9 @@ class Material {
     glm::vec3 specular = {1, 1, 1};
     glm::vec3 emissive = {0, 0, 0};
 
+    glm::vec2 textureScale = {1, 1};
+    glm::vec2 textureOffset = {0, 0};
+
     float shininess = 5;
     float opacity = 1;
 
@@ -84,13 +89,13 @@ class Material {
 public:
     explicit Material(Shader* shader, const aiMaterial* material, const std::filesystem::path& scenePath = "");
 
-    Material(Shader* shader) : shader(shader) {}
+    Material(Shader* shader);
 
     Material(const Material& other) = default;
 
     Material(Material&& other) noexcept
         : name(std::move(other.name)),
-          shader(other.shader),
+          shader(new Shader(*other.shader)),
           ambient(other.ambient),
           diffuse(other.diffuse),
           specular(other.specular),
@@ -103,7 +108,7 @@ public:
         if (this == &other)
             return *this;
         name = other.name;
-        shader = other.shader;
+        shader = new Shader(*other.shader);
         ambient = other.ambient;
         diffuse = other.diffuse;
         specular = other.specular;
@@ -117,8 +122,8 @@ public:
     Material& operator=(Material&& other) noexcept {
         if (this == &other)
             return *this;
-        name = std::move(other.name);
-        shader = other.shader;
+        name = other.name;
+        shader = new Shader(*other.shader);
         ambient = other.ambient;
         diffuse = other.diffuse;
         specular = other.specular;
@@ -136,6 +141,7 @@ public:
 
     void setTextureMap(TextureType type, const std::filesystem::path& path);
 
+
     [[nodiscard]] std::string getName() const { return name; }
     [[nodiscard]] Shader* getShader() const { return shader; }
     [[nodiscard]] glm::vec3 getAmbientColor() const { return ambient; }
@@ -144,6 +150,9 @@ public:
     [[nodiscard]] glm::vec3 getEmissiveColor() const { return emissive; }
     [[nodiscard]] float getShininess() const { return shininess; }
     [[nodiscard]] float getOpacity() const { return opacity; }
+    [[nodiscard]] glm::vec2 getTextureScale() const { return textureScale; }
+    [[nodiscard]] glm::vec2 getTextureOffset() const { return textureOffset; }
+
 
     //todo send to shader as well
     void setName(const std::string& newName) { this->name = newName; }
@@ -159,6 +168,18 @@ public:
     void setEmissive(const glm::vec3& newEmissive) { this->emissive = newEmissive; }
     void setShininess(float newShininess) { this->shininess = newShininess; }
     void setOpacity(float newOpacity) { this->opacity = newOpacity; }
+
+    void setTextureScale(const glm::vec2& newTextureScale) {
+        this->textureScale = newTextureScale;
+        shader->use();
+        glUniform2fv(glGetUniformLocation(shader->ID, "textureScale"), 1, value_ptr(textureScale));
+    }
+
+    void setTextureOffset(const glm::vec2& newTextureOffset) {
+        textureOffset = newTextureOffset;
+        shader->use();
+        glUniform2fv(glGetUniformLocation(shader->ID, "textureOffset"), 1, value_ptr(textureOffset));
+    }
 
 private:
     void loadTextures(const aiMaterial* material, const std::filesystem::path& textureDirPath);

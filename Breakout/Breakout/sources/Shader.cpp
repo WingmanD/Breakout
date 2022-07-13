@@ -8,25 +8,35 @@
 #include <glad/glad.h>
 
 
-void Shader::checkCompilerErrors(unsigned int shader, ShaderType type) {
-    int success;
-    char infolog[1024];
-    if (type != PROGRAM) {
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+Shader::Shader(std::filesystem::path path) { init(path); }
 
-        if (!success) {
-            glGetShaderInfoLog(shader, 1024, nullptr, infolog);
-            std::cout << "Error compiling shader type " << ShaderTypeStrings[type] << ": " << infolog << std::endl;
-        }
-    }
-    else {
-        glGetProgramiv(shader, GL_LINK_STATUS, &success);
-        if (!success) {
-            glGetProgramInfoLog(shader, 1024, nullptr, infolog);
-            std::cout << "Error linking shader type " << ShaderTypeStrings[type] << ": " << infolog << std::endl;
-        }
-    }
+void Shader::init(std::filesystem::path path) {
+    this->path = path;
+    ID = glCreateProgram();
+
+    GLuint vertexShader, fragmentShader, geometryShader;
+
+    if (readShader(path, VERTEX, vertexShader))
+        glAttachShader(ID, vertexShader);
+    if (readShader(path, GEOMETRY, geometryShader))
+        glAttachShader(ID, geometryShader);
+    if (readShader(path, FRAGMENT, fragmentShader))
+        glAttachShader(ID, fragmentShader);
+
+    glLinkProgram(ID);
+    checkCompilerErrors(ID, PROGRAM);
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+    glDeleteShader(geometryShader);
+
+    GLuint viewBlockIndex = glGetUniformBlockIndex(ID, "ViewData");
+
+    glUniformBlockBinding(ID, viewBlockIndex, 0);
+
+    std::cout << "Shader initialized ID: " << ID << std::endl;
 }
+
 
 bool Shader::readShader(std::filesystem::path path, ShaderType type, GLuint& shaderID) const {
     GLuint shader;
@@ -55,7 +65,7 @@ bool Shader::readShader(std::filesystem::path path, ShaderType type, GLuint& sha
         std::cerr << "Shader file " << path << " does not exist" << std::endl;
         return false;
     }
-    
+
     try {
         std::ifstream shaderFile(path);
         shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -81,37 +91,34 @@ bool Shader::readShader(std::filesystem::path path, ShaderType type, GLuint& sha
 }
 
 
-Shader::Shader(std::filesystem::path path) {
-    ID = glCreateProgram();
+void Shader::checkCompilerErrors(unsigned int shader, ShaderType type) {
+    int success;
+    char infolog[1024];
+    if (type != PROGRAM) {
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 
-    GLuint vertexShader, fragmentShader, geometryShader;
-    
-    if (readShader(path, VERTEX, vertexShader))
-        glAttachShader(ID, vertexShader);
-    if (readShader(path, GEOMETRY, geometryShader))
-        glAttachShader(ID, geometryShader);
-    if (readShader(path, FRAGMENT, fragmentShader))
-        glAttachShader(ID, fragmentShader);
+        if (!success) {
+            glGetShaderInfoLog(shader, 1024, nullptr, infolog);
+            std::cout << "Error compiling shader type " << ShaderTypeStrings[type] << ": " << infolog << std::endl;
+        }
+    }
+    else {
+        glGetProgramiv(shader, GL_LINK_STATUS, &success);
+        if (!success) {
+            glGetProgramInfoLog(shader, 1024, nullptr, infolog);
+            std::cout << "Error linking shader type " << ShaderTypeStrings[type] << ": " << infolog << std::endl;
+        }
+    }
+}
 
-    glLinkProgram(ID);
-    checkCompilerErrors(ID, PROGRAM);
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-    glDeleteShader(geometryShader);
-
-    GLuint viewBlockIndex = glGetUniformBlockIndex(ID, "ViewData");
-
-    glUniformBlockBinding(ID, viewBlockIndex, 0);
+void Shader::use() const {
+    glUseProgram(ID);
 }
 
 Shader::~Shader() {
     glDeleteProgram(ID);
 }
 
-void Shader::use() const {
-    glUseProgram(ID);
-}
 
 // todo template this 
 void Shader::setUniform(const std::string& name, bool value) const {

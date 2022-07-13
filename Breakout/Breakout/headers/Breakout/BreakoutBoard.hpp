@@ -135,9 +135,27 @@ struct Brick {
     }
 };
 
+struct Ball {
+    StaticMeshComponent* meshComp = nullptr;
+    glm::vec3 velocity = glm::vec3(0, 0, 0);
+    float radius = 0;
+
+    explicit Ball(StaticMeshComponent* const mesh_comp)
+        : meshComp(mesh_comp) {
+        auto AABB = mesh_comp->getMesh()->getBoundingBox();
+
+        radius = (AABB.max.x - AABB.min.x) / 2.0f;
+    }
+};
+
 class BreakoutBoard : public Player {
     std::map<std::string, StaticMesh*> brickNameSMeshMap;
     std::vector<std::vector<Brick*>> bricks;
+
+    SceneComponent* player = nullptr;
+
+    float boardWidth = 0;
+
 
 public:
     BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& level);
@@ -145,4 +163,6 @@ public:
     void tick(double deltaTime) override;
 
     void onKey(int key, int scancode, int action, int mods) override;
+
+    void onMouseMove(double xpos, double ypos) override;
 };

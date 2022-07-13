@@ -88,6 +88,13 @@ public:
         return result;
     }*/
 
+    template <typename T>
+    static float clamp(T min, T max, T value) {
+        if (value < min) return min;
+        if (value > max) return max;
+        return value;
+    }
+
     static std::vector<std::string> split(const std::string& input, char delimiter) {
         std::vector<std::string> out;
         std::stringstream ss(input);

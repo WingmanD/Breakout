@@ -18,6 +18,8 @@ Material::Material(Shader* shader, const aiMaterial* material, const std::filesy
     setup();
 }
 
+Material::Material(Shader* shader) : shader(shader) { setup(); }
+
 void Material::setup() {
     shader->use();
     apply();
@@ -33,7 +35,10 @@ void Material::setTextureMap(TextureType type, const std::filesystem::path& path
 }
 
 void Material::apply() {
-    glUseProgram(shader->ID);
+    shader->use();
+
+    std::cout << "Applying material with shader: " << shader->ID << std::endl;
+
     glUniform3fv(glGetUniformLocation(shader->ID, "ambientColor"), 1, &ambient[0]);
     glUniform3fv(glGetUniformLocation(shader->ID, "diffuseColor"), 1, &diffuse[0]);
     glUniform3fv(glGetUniformLocation(shader->ID, "specularColor"), 1, &specular[0]);
@@ -41,6 +46,9 @@ void Material::apply() {
 
     glUniform1f(glGetUniformLocation(shader->ID, "shininess"), shininess);
     glUniform1f(glGetUniformLocation(shader->ID, "opacity"), opacity);
+
+    glUniform2fv(glGetUniformLocation(shader->ID, "textureScale"), 1, value_ptr(textureScale));
+    glUniform2fv(glGetUniformLocation(shader->ID, "textureOffset"), 1, value_ptr(textureOffset));
 }
 
 void Material::applyTextures() {
@@ -66,10 +74,10 @@ void Material::loadTextures(const aiMaterial* material, const std::filesystem::p
 
 void Material::setupTexture(Texture2D* texture) {
     shader->use();
-    
+
     glActiveTexture(GL_TEXTURE0 + texture->type);
     glBindTexture(GL_TEXTURE_2D, texture->ID);
-    
+
     glUniform1i(glGetUniformLocation(shader->ID, TextureTypeNames[texture->type].c_str()), texture->type);
     glUniform1i(glGetUniformLocation(shader->ID, std::string(TextureTypeNames[texture->type] + "Present").c_str()), 1);
 }

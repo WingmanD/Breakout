@@ -12,6 +12,9 @@ out vertexData {
 
 uniform mat4 model;
 
+uniform vec2 textureScale;
+uniform vec2 textureOffset;
+
 void main()
 {
     vec4 worldSpace =  model * vec4(aPos, 1.0);
@@ -21,5 +24,5 @@ void main()
     vertex.normal = normalize(normalMatrix * aNormal);
     gl_Position =  worldSpace;
 
-    vertex.texCoord = aUV;
+    vertex.texCoord = aUV * textureScale + textureOffset;
 }

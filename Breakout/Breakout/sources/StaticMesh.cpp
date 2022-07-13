@@ -55,7 +55,7 @@ std::vector<StaticMesh*> StaticMesh::batchImport(const std::filesystem::path& pa
         std::cerr << "Scene::load: File does not exist: " << path << std::endl;
         return {};
     }
-    
+
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path.string(),
                                              aiProcess_CalcTangentSpace |
@@ -79,9 +79,10 @@ std::vector<StaticMesh*> StaticMesh::batchImport(const std::filesystem::path& pa
                 return {};
             }
             else if (scene->mMaterials[scene->mMeshes[i]->mMaterialIndex])
-                material = new Material(shaderOverride, scene->mMaterials[scene->mMeshes[i]->mMaterialIndex]);
+                material = new Material(new Shader(*shaderOverride),
+                                        scene->mMaterials[scene->mMeshes[i]->mMaterialIndex]);
             else
-                material = new Material(shaderOverride);
+                material = new Material(new Shader(*shaderOverride));
 
             meshes.emplace_back(new StaticMesh(scene->mMeshes[i], material));
         }
@@ -154,9 +155,9 @@ void StaticMesh::draw(const Transform& transform) {
     glBindVertexArray(VAO);
     glUniformMatrix4fv(glGetUniformLocation(material->getShader()->ID, "model"), 1, GL_FALSE,
                        &transform.getModelMatrix()[0][0]);
- 
-    material->applyTextures();
     
+    material->applyTextures();
+
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }

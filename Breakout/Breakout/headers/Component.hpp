@@ -4,16 +4,18 @@ class Object;
 
 class Component {
 protected:
-    Object* parent = nullptr;
+    Object* owner = nullptr;
 public:
     Component() = default;
 
     virtual void tick() {}
 
-    void attachComponentToObject(Object* newParent) { this->parent = newParent; }
-    void detach() { this->parent = nullptr; }
+    void attachComponentToObject(Object* newParent) {
+        this->owner = newParent;
+    }
+    void detach() { this->owner = nullptr; }
 
-    [[nodiscard]] Object* getParent() const { return parent; }
+    [[nodiscard]] Object* getParent() const { return owner; }
 
     virtual ~Component() = default;
 };

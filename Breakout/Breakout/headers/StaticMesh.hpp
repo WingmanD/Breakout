@@ -68,13 +68,12 @@ class StaticMesh : public Drawable {
     GLuint VAO{};
     GLuint VBO[4]{};
     GLuint EBO{};
-public:
+    Material* material;
+
     std::vector<unsigned int> indices;
     std::vector<Vertex> vertices;
     std::vector<Triangle> triangles;
-
-    Material* material;
-
+public:
     StaticMesh(const aiMesh* mesh, Material* material);
 
     StaticMesh(const StaticMesh& other)
@@ -132,11 +131,15 @@ public:
     [[nodiscard]] std::vector<unsigned> getIndices() const { return indices; }
     [[nodiscard]] GLuint getVAO() const { return VAO; }
     [[nodiscard]] GLuint getEBO() const { return EBO; }
-    [[nodiscard]] std::vector<glm::vec3> calculateNormals() const;
+    [[nodiscard]] Material* getMaterial() const { return material; }
+
+    void setMaterial(Material* const newMaterial) { this->material = newMaterial; }
 
     [[nodiscard]] glm::vec3 getCenter() const;
     [[nodiscard]] float calculateVolume() const;
     [[nodiscard]] float calculateSurfaceArea() const;
+
+    [[nodiscard]] std::vector<glm::vec3> calculateNormals() const;
 
     ~StaticMesh() {
         glDeleteBuffers(4, VBO);
