@@ -94,6 +94,14 @@ public:
         if (value > max) return max;
         return value;
     }
+    
+    template <typename T>
+    static T random(T min, T max) {
+        std::default_random_engine generator(glfwGetTime());
+        const std::uniform_real_distribution<float> distribution(min, max);
+        
+        return distribution(generator);
+    }
 
     static std::vector<std::string> split(const std::string& input, char delimiter) {
         std::vector<std::string> out;
@@ -117,5 +125,4 @@ public:
         return (1.0f / 6.0f) * glm::abs(glm::dot(triangle.v0->position - top,
                                                  glm::cross(triangle.v1->position - top, triangle.v2->position - top)));
     }
-
 };

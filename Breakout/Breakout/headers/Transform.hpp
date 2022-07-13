@@ -27,4 +27,5 @@ public:
     [[nodiscard]] glm::vec3 getGlobalRotation() const;
 protected:
     void attachTo(Transform* newParent);
+    void detach();
 };

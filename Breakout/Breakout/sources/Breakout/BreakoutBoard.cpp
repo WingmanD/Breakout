@@ -1,7 +1,12 @@
 ﻿#include "Breakout/BreakoutBoard.hpp"
 #include "Engine.hpp"
 
+#define PHYSICS_DELTA_TIME (1.0f / 120.0f)
+
 BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& level): Player(owningEngine) {
+    rowCount = level.rowCount;
+    columnCount = level.columnCount;
+
     auto meshImport = StaticMesh::batchImport(engine->getRuntimePath() / "resources/meshes/brick/brick.obj",
                                               new Material(
                                                   new Shader(engine->getRuntimePath() / "shaders/blinnPhong")));
@@ -16,8 +21,8 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
     }
 
     auto brickAABB = brickMesh->getBoundingBox();
-    auto brickWidth = std::max(brickAABB.max.x - brickAABB.min.x, brickAABB.max.z - brickAABB.min.z);
-    auto brickHeight = std::min(brickAABB.max.x - brickAABB.min.x, brickAABB.max.z - brickAABB.min.z);
+    brickWidth = std::max(brickAABB.max.x - brickAABB.min.x, brickAABB.max.z - brickAABB.min.z);
+    brickHeight = std::min(brickAABB.max.x - brickAABB.min.x, brickAABB.max.z - brickAABB.min.z);
 
     auto planeImport = StaticMesh::batchImport(engine->getRuntimePath() / "resources/meshes/plane/plane.obj",
                                                new Material(
@@ -30,13 +35,13 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
 
     auto background = new StaticMeshComponent(planeMesh);
 
-    float cellWidth = brickWidth + level.columnSpacing * brickWidth * 0.1f;
-    float cellHeight = brickHeight + level.rowSpacing * brickHeight * 0.1f;
+    cellWidth = brickWidth + level.columnSpacing * brickWidth * 0.1f;
+    cellHeight = brickHeight + level.rowSpacing * brickHeight * 0.1f;
 
     boardWidth = static_cast<float>(level.columnCount) * cellWidth;
     float boardHeight = static_cast<float>(level.rowCount) * cellHeight;
 
-    float totalBoardHeight = 9 / 16.0f * boardWidth;
+    totalBoardHeight = 9 / 16.0f * boardWidth;
 
     float backgroundScale = std::max(boardWidth * 1.1f, boardHeight * 1.1f);
 
@@ -55,6 +60,8 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
                 auto brick = new Brick(level.bricks[i][j]);
                 brick->meshComp = new StaticMeshComponent(brickNameSMeshMap[brick->info->name]);
 
+                addSceneComponent(brick->meshComp);
+
                 brick->meshComp->setLocation({
                     static_cast<float>(j) * cellWidth + cellWidth / 2.0f - boardWidth / 2.0f,
                     0.1f,
@@ -62,7 +69,7 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
                     - totalBoardHeight / 2.0f
                 });
 
-                addSceneComponent(brick->meshComp);
+
                 bricks[i][j] = brick;
             }
         }
@@ -78,14 +85,13 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
         DIFFUSE, engine->getRuntimePath() / "resources/meshes/player/MetalPipeWallRusty_albedo.png");
 
     player = new StaticMeshComponent(playerMesh);
+    addSceneComponent(player);
 
     player->setLocation({
         0.0f,
         0.1f,
         totalBoardHeight / 2.0f
     });
-
-    addSceneComponent(player);
 
     auto ballMeshImport = StaticMesh::batchImport(engine->getRuntimePath() / "resources/meshes/sphere/sphere.obj",
                                                   new Material(
@@ -112,17 +118,36 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
 
 }
 
-void BreakoutBoard::tick(double deltaTime) {}
+void BreakoutBoard::tick(double deltaTime) {
+    if (bDisabled) return;
+
+    const int fullIterations = static_cast<int>(static_cast<float>(deltaTime) / (1.0f / 120.0f));
+    const float lastIterLength = static_cast<float>(deltaTime) - static_cast<float>(fullIterations) * (1.0f / 120.0f);
+
+    for (int i = 0; i < fullIterations; i++)
+        applyBallMovement(PHYSICS_DELTA_TIME);
+    applyBallMovement(lastIterLength);
+
+}
 
 void BreakoutBoard::onKey(int key, int scancode, int action, int mods) {
-    /*if (key == GLFW_KEY_S && action == GLFW_PRESS) { engine->getScene()->getActiveCamera()->move({0, 1, 0}); }
+    if (key == GLFW_KEY_S && action == GLFW_PRESS) { engine->getScene()->getActiveCamera()->move({0, 1, 0}); }
     else if (key == GLFW_KEY_W && action == GLFW_PRESS) { engine->getScene()->getActiveCamera()->move({0, -1, 0}); }
     else if (key == GLFW_KEY_A && action == GLFW_PRESS) { engine->getScene()->getActiveCamera()->move({-1, 0, 0}); }
     else if (key == GLFW_KEY_D && action == GLFW_PRESS) { engine->getScene()->getActiveCamera()->move({1, 0, 0}); }
-    else if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) { engine->getScene()->getActiveCamera()->move({0, 0, 1}); }
-    else if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS) {
+    //else if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) { engine->getScene()->getActiveCamera()->move({0, 0, 1}); }
+    else if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS)
         engine->getScene()->getActiveCamera()->move({0, 0, -1});
-    }*/
+    else if (key == GLFW_KEY_ENTER == GLFW_PRESS) {
+        int x, y;
+        cellIndicesFromBallLocation(balls[0], x, y);
+        std::cout << "ball at " << x << " " << y << std::endl;
+    }
+
+    if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE)
+        if (bDisabled)
+            start();
+
 }
 
 void BreakoutBoard::onMouseMove(double xpos, double ypos) {
@@ -142,7 +167,7 @@ void BreakoutBoard::spawnBall() {
 
     ball->meshComp->setLocation({
         0.0f,
-        player->getLocation().y,
+        0.0f,
         -(playerHeight / 2.0f + ball->radius * 2.0f)
     });
 
@@ -150,4 +175,29 @@ void BreakoutBoard::spawnBall() {
 
 }
 
-void BreakoutBoard::checkCollision(Ball* ball) {}
+void BreakoutBoard::start() {
+    bDisabled = false;
+    for (auto ball : balls) {
+        ball->meshComp->detachFromComponent();
+        ball->meshComp->attachComponentToObject(this);
+
+        ball->velocity = normalize(glm::vec3(0.0f, 0.0f, -1.0f));
+        //ball->velocity = normalize(glm::vec3(Util::random(-1.0f, 1.0f), 0.0f, -1.0f));
+    }
+}
+
+void BreakoutBoard::cellIndicesFromBallLocation(Ball* ball, int& row, int& column) {
+    glm::vec3 ballRelativeLocation = glm::vec3(-boardWidth / 2.0f, 0.0f, - totalBoardHeight / 2.0f) -
+        ball->meshComp->getLocation();
+    row = - static_cast<int>(ballRelativeLocation.z / cellHeight);
+    column = -static_cast<int>(ballRelativeLocation.x / cellWidth);
+}
+
+void BreakoutBoard::checkCollision(Ball* ball) { }
+
+void BreakoutBoard::applyBallMovement(float deltaTime) {
+    for (auto ball : balls) {
+        checkCollision(ball);
+        ball->meshComp->move(ball->velocity * ballSpeed * deltaTime);
+    }
+}

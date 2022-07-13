@@ -14,7 +14,7 @@ public:
         this->owner = newOwner;
     }
     
-    void detach() { this->owner = nullptr; }
+    void detachFromComponent() { this->owner = nullptr; }
 
     [[nodiscard]] Object* getOwner() const { return owner; }
 

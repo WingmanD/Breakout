@@ -155,9 +155,23 @@ class BreakoutBoard : public Player {
     StaticMeshComponent* player = nullptr;
 
     StaticMesh* ballMesh = nullptr;
-    
+
+    int rowCount = 0;
+    int columnCount = 0;
+
+    float cellWidth = 0;
+    float cellHeight = 0;
+
+    float brickWidth = 0;
+    float brickHeight = 0;
+
     float boardWidth = 0;
     std::vector<Ball*> balls;
+
+    bool bDisabled = true;
+
+    float ballSpeed = 1.0f;
+    float totalBoardHeight = 0;
 
 public:
     BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& level);
@@ -170,5 +184,10 @@ public:
 
 private:
     void spawnBall();
+    void start();
+    void applyBallMovement(float deltaTime);
+    void cellIndicesFromBallLocation(Ball* ball, int& row, int& column);
     void checkCollision(Ball* ball);
+
+
 };

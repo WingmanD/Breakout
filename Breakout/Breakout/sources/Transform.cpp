@@ -4,7 +4,7 @@
 
 glm::mat4 Transform::getModelMatrix() const {
     glm::mat4 model = glm::mat4(1.0f);
-    
+
     model = translate(model, Location);
     model = glm::rotate(model, glm::radians(Rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(Rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -15,7 +15,7 @@ glm::mat4 Transform::getModelMatrix() const {
     return model;
 }
 
-glm::mat4 Transform::getViewMatrix() const { return glm::inverse(getModelMatrix()); }
+glm::mat4 Transform::getViewMatrix() const { return inverse(getModelMatrix()); }
 
 //todo
 glm::vec3 Transform::getGlobalLocation() const {
@@ -29,9 +29,9 @@ glm::vec3 Transform::getGlobalLocation() const {
     return rotatedLocation + parent->getGlobalLocation();*/
     if (parent)
         return parent->getModelMatrix() * glm::vec4(Location, 1.0f);
-    else 
+    else
         return Location;
-    
+
 }
 
 glm::vec3 Transform::getGlobalRotation() const {
@@ -41,7 +41,19 @@ glm::vec3 Transform::getGlobalRotation() const {
     glm::quat localRotation = glm::quat(Rotation);
     glm::quat globalRotation = rotationAroundParent * localRotation * inverse(rotationAroundParent);
 
-    return glm::eulerAngles(globalRotation);
+    return eulerAngles(globalRotation);
 }
 
-void Transform::attachTo(Transform* newParent) { parent = newParent; }
+void Transform::attachTo(Transform* newParent) {
+    if (parent) detach();
+
+    parent = newParent;
+    Location -= parent->getGlobalLocation();
+}
+
+void Transform::detach() {
+    if (!parent) return;
+
+    Location = getGlobalLocation();
+    parent = nullptr;
+}

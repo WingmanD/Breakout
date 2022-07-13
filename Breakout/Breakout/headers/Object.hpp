@@ -35,7 +35,7 @@ public:
     }
 
     void removeComponent(Component* component) {
-        component->detach();
+        component->detachFromComponent();
         std::erase(childSceneComponents, component);
         std::erase(childLogicComponents, component);
     }
