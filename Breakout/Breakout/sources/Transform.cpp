@@ -19,19 +19,9 @@ glm::mat4 Transform::getViewMatrix() const { return inverse(getModelMatrix()); }
 
 //todo
 glm::vec3 Transform::getGlobalLocation() const {
-    /*if (!parent) return Location;
-
-    glm::quat rotationAroundParent = glm::quat(glm::vec3(glm::radians(parent->Rotation.x),
-                                                         glm::radians(parent->Rotation.y),
-                                                         glm::radians(parent->Rotation.z)));
-    glm::vec3 rotatedLocation = rotationAroundParent * Location;
-
-    return rotatedLocation + parent->getGlobalLocation();*/
     if (parent)
         return parent->getModelMatrix() * glm::vec4(Location, 1.0f);
-    else
-        return Location;
-
+    return Location;
 }
 
 glm::vec3 Transform::getGlobalRotation() const {
@@ -42,6 +32,10 @@ glm::vec3 Transform::getGlobalRotation() const {
     glm::quat globalRotation = rotationAroundParent * localRotation * inverse(rotationAroundParent);
 
     return eulerAngles(globalRotation);
+}
+
+glm::vec3 Transform::getRelativeLocationFrom(Transform* other) const {
+    return inverse(other->getModelMatrix()) * glm::vec4(getGlobalLocation(), 1.0f);
 }
 
 void Transform::attachTo(Transform* newParent) {

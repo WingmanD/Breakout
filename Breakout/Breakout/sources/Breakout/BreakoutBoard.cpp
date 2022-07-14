@@ -1,4 +1,6 @@
 ﻿#include "Breakout/BreakoutBoard.hpp"
+
+#include "BoxCollisionComponent.hpp"
 #include "Engine.hpp"
 
 #define PHYSICS_DELTA_TIME (1.0f / 120.0f)
@@ -60,6 +62,9 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
                 auto brick = new Brick(level.bricks[i][j]);
                 brick->meshComp = new StaticMeshComponent(brickNameSMeshMap[brick->info->name]);
 
+                brick->boxCollision = new BoxCollisionComponent(brick->meshComp->getMesh()->getBoundingBox());
+                brick->boxCollision->attachComponentToComponent(brick->meshComp);
+
                 addSceneComponent(brick->meshComp);
 
                 brick->meshComp->setLocation({
@@ -75,6 +80,7 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
         }
     }
 
+    // todo move player to separate class
     auto playerMeshImport = StaticMesh::batchImport(engine->getRuntimePath() / "resources/meshes/player/player.obj",
                                                     new Material(
                                                         new Shader(engine->getRuntimePath() / "shaders/blinnPhong")));
@@ -83,6 +89,11 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
 
     playerMesh->getMaterial()->setTextureMap(
         DIFFUSE, engine->getRuntimePath() / "resources/meshes/player/MetalPipeWallRusty_albedo.png");
+
+    auto playerAABB = playerMesh->getBoundingBox();
+    playerWidth = playerAABB.max.x - playerAABB.min.x;
+    //todo watch out for z coord
+    playerHeight = playerAABB.max.z - playerAABB.min.z;
 
     player = new StaticMeshComponent(playerMesh);
     addSceneComponent(player);
@@ -143,6 +154,8 @@ void BreakoutBoard::onKey(int key, int scancode, int action, int mods) {
         cellIndicesFromBallLocation(balls[0], x, y);
         std::cout << "ball at " << x << " " << y << std::endl;
     }
+    else if (key == GLFW_KEY_UP && action == GLFW_PRESS) { ballSpeed *= 2; }
+    else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) { ballSpeed /= 2; }
 
     if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE)
         if (bDisabled)
@@ -162,14 +175,13 @@ void BreakoutBoard::spawnBall() {
 
     ball->meshComp->attachComponentToComponent(player);
 
-    auto playerAABB = player->getMesh()->getBoundingBox();
-    float playerHeight = playerAABB.max.y - playerAABB.min.y;
-
     ball->meshComp->setLocation({
         0.0f,
         0.0f,
         -(playerHeight / 2.0f + ball->radius * 2.0f)
     });
+
+    std::cout << "ball radius " << ball->radius << std::endl;
 
     balls.emplace_back(ball);
 
@@ -181,8 +193,8 @@ void BreakoutBoard::start() {
         ball->meshComp->detachFromComponent();
         ball->meshComp->attachComponentToObject(this);
 
-        ball->velocity = normalize(glm::vec3(0.0f, 0.0f, -1.0f));
-        //ball->velocity = normalize(glm::vec3(Util::random(-1.0f, 1.0f), 0.0f, -1.0f));
+        //ball->velocity = normalize(glm::vec3(0.0f, 0.0f, -1.0f));
+        ball->velocity = normalize(glm::vec3(Util::random(-3.0f, 3.0f), 0.0f, -1.0f));
     }
 }
 
@@ -193,7 +205,116 @@ void BreakoutBoard::cellIndicesFromBallLocation(Ball* ball, int& row, int& colum
     column = -static_cast<int>(ballRelativeLocation.x / cellWidth);
 }
 
-void BreakoutBoard::checkCollision(Ball* ball) { }
+void BreakoutBoard::checkCollision(Ball* ball) {
+    int row, column;
+    cellIndicesFromBallLocation(ball, row, column);
+    for (int i = row - 1; i <= row + 1; i++) {
+        for (int j = column - 1; j <= column + 1; j++) { checkCollision(ball, i, j); }
+    }
+
+
+}
+
+void BreakoutBoard::checkCollision(Ball* ball, int row, int column) {
+    // todo extract ball and player locations here
+    // check collision with top wall
+    if (row < 0) {
+        float topWallZ = - totalBoardHeight / 2.0f;
+        float distance = ball->meshComp->getLocation().z - ball->radius - topWallZ;
+        if (distance < 0) {
+            ball->meshComp->move(
+                glm::vec3(0.0f, 0.0f, 1.0f) * -distance);
+            ball->velocity = reflect(ball->velocity, glm::vec3(0.0f, 0.0f, 1.0f));
+            return;
+        }
+    }
+
+    // check collision with left wall
+    if (column < 0) {
+        float leftWallX = -boardWidth / 2.0f;
+        float distance = ball->meshComp->getLocation().x - ball->radius - leftWallX;
+        if (distance < 0) {
+            ball->meshComp->move(
+                glm::vec3(1.0f, 0.0f, 0.0f) * -distance);
+            ball->velocity = reflect(ball->velocity, glm::vec3(1.0f, 0.0f, 0.0f));
+            return;
+        }
+    }
+
+    // check collision with right wall
+    if (column > columnCount - 1) {
+        float rightWallX = boardWidth / 2.0f;
+        float distance = rightWallX - ball->meshComp->getLocation().x + ball->radius;
+        if (distance < 0) {
+            ball->meshComp->move(
+                glm::vec3(-1.0f, 0.0f, 0.0f) * -distance);
+            ball->velocity = reflect(ball->velocity, glm::vec3(-1.0f, 0.0f, 0.0f));
+            return;
+        }
+    }
+
+    // check collision with player
+    float distanceFromPlayerUp = player->getLocation().z - playerHeight - ball->meshComp->getLocation().z + ball->
+        radius;
+    if (distanceFromPlayerUp <= 0 && abs(distanceFromPlayerUp) < ball->radius) {
+        float distanceFromPlayerLR = abs(
+            ball->meshComp->getLocation().x - ball->radius - player->getLocation().x);
+
+        if (distanceFromPlayerLR < playerWidth / 2.0f) {
+            ball->meshComp->move(
+                glm::vec3(0.0f, 0.0f, -1.0f) * -distanceFromPlayerUp);
+            ball->velocity = reflect(ball->velocity, glm::vec3(0.0f, 0.0f, -1.0f));
+            return;
+        }
+    }
+
+    // check collision with bricks
+
+    //todo leave only row > rowCount - 1
+    if (row < 0 || row > rowCount - 1 || column < 0 || column > columnCount - 1) return;
+
+    // no brick in this cell - nothing to check
+    if (!bricks[row][column]) return;
+
+    glm::vec2 cellCenter = getCellCenter(row, column);
+
+    // check right side
+    if (ball->meshComp->getLocation().x - ball->radius <= cellCenter.x + brickWidth / 2) {
+        if ((ball->meshComp->getLocation().z - ball->radius <= cellCenter.y + brickHeight / 2) || (ball->meshComp->
+            getLocation().z + ball->radius >= cellCenter.y - brickHeight / 2)) {
+            ball->velocity = reflect(ball->velocity, glm::vec3(1.0f, 0.0f, 0.0f));
+            return;
+        }
+    }
+
+    if (ball->meshComp->getLocation().x + ball->radius >= cellCenter.x - brickWidth / 2) {
+        ball->velocity = reflect(ball->velocity, glm::vec3(-1.0f, 0.0f, 0.0f));
+        return;
+    }
+
+    if (ball->meshComp->getLocation().z - ball->radius <= cellCenter.y + brickHeight / 2) {
+        ball->velocity = reflect(ball->velocity, glm::vec3(0.0f, 0.0f, 1.0f));
+        return;
+    }
+    else {
+        std::cout << "ball " << ball->meshComp->getLocation().z - ball->radius << " brick " << cellCenter.y +
+            brickHeight / 2 << std::endl;
+    }
+
+    if (ball->meshComp->getLocation().z + ball->radius >= cellCenter.y - brickHeight / 2) {
+        ball->velocity = reflect(ball->velocity, glm::vec3(0.0f, 0.0f, -1.0f));
+        return;
+    }
+
+}
+
+//todo use this in constructor
+glm::vec2 BreakoutBoard::getCellCenter(int row, int column) {
+    return glm::vec2(
+        static_cast<float>(column) * cellWidth + cellWidth / 2.0f - boardWidth / 2.0f,
+        static_cast<float>(row) * cellHeight + cellHeight / 2.0f - totalBoardHeight / 2.0f
+    );
+}
 
 void BreakoutBoard::applyBallMovement(float deltaTime) {
     for (auto ball : balls) {

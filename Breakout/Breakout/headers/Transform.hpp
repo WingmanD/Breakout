@@ -25,6 +25,8 @@ public:
 
     [[nodiscard]] glm::vec3 getGlobalLocation() const;
     [[nodiscard]] glm::vec3 getGlobalRotation() const;
+
+    [[nodiscard]] glm::vec3 getRelativeLocationFrom(Transform* other) const;
 protected:
     void attachTo(Transform* newParent);
     void detach();

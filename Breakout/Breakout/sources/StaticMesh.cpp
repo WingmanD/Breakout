@@ -46,6 +46,8 @@ StaticMesh::StaticMesh(const aiMesh* mesh, Material* material): material(materia
             vertices[i].normal = normals[i];
     }
 
+    boundingBox = calculateBoundingBox();
+
     StaticMesh::init();
 }
 
@@ -95,23 +97,6 @@ std::vector<StaticMesh*> StaticMesh::batchImport(const std::filesystem::path& pa
 
 }
 
-BoundingBox StaticMesh::getBoundingBox() const {
-    glm::vec3 min, max;
-    min = max = vertices[0].position;
-
-    for (const auto& vertex : vertices) {
-        if (vertex.position.x < min.x) { min.x = vertex.position.x; }
-        if (vertex.position.y < min.y) { min.y = vertex.position.y; }
-        if (vertex.position.z < min.z) { min.z = vertex.position.z; }
-
-        if (vertex.position.x > max.x) { max.x = vertex.position.x; }
-        if (vertex.position.y > max.y) { max.y = vertex.position.y; }
-        if (vertex.position.z > max.z) { max.z = vertex.position.z; }
-    }
-
-    return {min, max};
-}
-
 void StaticMesh::init() {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(4, VBO);
@@ -155,7 +140,7 @@ void StaticMesh::draw(const Transform& transform) {
     glBindVertexArray(VAO);
     glUniformMatrix4fv(glGetUniformLocation(material->getShader()->ID, "model"), 1, GL_FALSE,
                        &transform.getModelMatrix()[0][0]);
-    
+
     material->applyTextures();
 
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
@@ -179,6 +164,23 @@ std::vector<glm::vec3> StaticMesh::calculateNormals() const {
     for (auto& normal : normals) normal = normalize(normal);
 
     return normals;
+}
+
+BoundingBox StaticMesh::calculateBoundingBox() const {
+    glm::vec3 min, max;
+    min = max = vertices[0].position;
+
+    for (const auto& vertex : vertices) {
+        if (vertex.position.x < min.x) { min.x = vertex.position.x; }
+        if (vertex.position.y < min.y) { min.y = vertex.position.y; }
+        if (vertex.position.z < min.z) { min.z = vertex.position.z; }
+
+        if (vertex.position.x > max.x) { max.x = vertex.position.x; }
+        if (vertex.position.y > max.y) { max.y = vertex.position.y; }
+        if (vertex.position.z > max.z) { max.z = vertex.position.z; }
+    }
+
+    return {min, max};
 }
 
 glm::vec3 StaticMesh::getCenter() const {

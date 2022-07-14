@@ -1,8 +1,10 @@
 ﻿#pragma once
 #include <filesystem>
 
+#include "BoxCollisionComponent.hpp"
 #include "Player.hpp"
 #include "SoundCue.hpp"
+#include "SphereCollisionComponent.hpp"
 #include "StaticMeshComponent.hpp"
 #include "Util.hpp"
 #include "tinyxml/tinyxml2.h"
@@ -122,6 +124,7 @@ struct Brick {
     SoundCue* breakSound = nullptr;
 
     StaticMeshComponent* meshComp = nullptr;
+    BoxCollisionComponent* boxCollision = nullptr;
 
     Brick(BreakoutLevelInfo::BrickTypeInfo* info): info(info) { HP = info->hitPoints; }
 
@@ -137,13 +140,18 @@ struct Brick {
 
 struct Ball {
     StaticMeshComponent* meshComp = nullptr;
+    SphereCollisionComponent* sphereCollision = nullptr;
     glm::vec3 velocity = glm::vec3(0, 0, 0);
     float radius = 0;
 
+    // todo transfer radius to collision 
     explicit Ball(StaticMeshComponent* const mesh_comp)
         : meshComp(mesh_comp) {
         auto AABB = mesh_comp->getMesh()->getBoundingBox();
 
+        sphereCollision = new SphereCollisionComponent(radius);
+        sphereCollision->attachComponentToComponent(meshComp);
+        
         radius = (AABB.max.x - AABB.min.x) / 2.0f;
     }
 };
@@ -164,6 +172,9 @@ class BreakoutBoard : public Player {
 
     float brickWidth = 0;
     float brickHeight = 0;
+
+    float playerWidth = 0;
+    float playerHeight = 0;
 
     float boardWidth = 0;
     std::vector<Ball*> balls;
@@ -188,6 +199,8 @@ private:
     void applyBallMovement(float deltaTime);
     void cellIndicesFromBallLocation(Ball* ball, int& row, int& column);
     void checkCollision(Ball* ball);
+    void checkCollision(Ball* ball, int row, int column);
+    glm::vec2 getCellCenter(int row, int column);
 
 
 };

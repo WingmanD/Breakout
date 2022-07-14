@@ -73,6 +73,8 @@ class StaticMesh : public Drawable {
     std::vector<unsigned int> indices;
     std::vector<Vertex> vertices;
     std::vector<Triangle> triangles;
+
+    BoundingBox boundingBox;
 public:
     StaticMesh(const aiMesh* mesh, Material* material);
 
@@ -80,7 +82,7 @@ public:
         : Drawable(other),
           indices(other.indices),
           vertices(other.vertices),
-          triangles(other.triangles) {
+          triangles(other.triangles), boundingBox(other.boundingBox) {
         material = new Material(*other.material);
         StaticMesh::init();
     }
@@ -89,7 +91,7 @@ public:
         : Drawable(std::move(other)),
           indices(std::move(other.indices)),
           vertices(std::move(other.vertices)),
-          triangles(std::move(other.triangles)) {
+          triangles(std::move(other.triangles)), boundingBox(other.boundingBox) {
 
         material = new Material(*other.material);
         StaticMesh::init();
@@ -103,6 +105,7 @@ public:
         vertices = other.vertices;
         triangles = other.triangles;
         material = new Material(*other.material);
+        boundingBox = other.boundingBox;
         StaticMesh::init();
         return *this;
     }
@@ -127,7 +130,7 @@ public:
     void draw() override;
     void draw(const Transform& transform) override;
 
-    [[nodiscard]] BoundingBox getBoundingBox() const;
+    [[nodiscard]] BoundingBox getBoundingBox() const {return  boundingBox;}
     [[nodiscard]] std::vector<unsigned> getIndices() const { return indices; }
     [[nodiscard]] GLuint getVAO() const { return VAO; }
     [[nodiscard]] GLuint getEBO() const { return EBO; }
@@ -146,5 +149,8 @@ public:
         glDeleteBuffers(1, &EBO);
         glDeleteVertexArrays(1, &VAO);
     }
+
+private:
+    BoundingBox calculateBoundingBox() const;
 
 };
