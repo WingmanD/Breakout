@@ -9,6 +9,8 @@ public:
     explicit BoxCollisionComponent(const BoundingBox& aabb)
         : aabb(aabb) {}
 
+    explicit BoxCollisionComponent(const glm::vec3& size);
+
     [[nodiscard]] BoundingBox getBoundingBox() const {
         const glm::vec3 globalLocation = getGlobalLocation();
         return { globalLocation + aabb.min, globalLocation + aabb.max };

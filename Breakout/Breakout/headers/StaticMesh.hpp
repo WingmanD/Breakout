@@ -130,7 +130,7 @@ public:
     void draw() override;
     void draw(const Transform& transform) override;
 
-    [[nodiscard]] BoundingBox getBoundingBox() const {return  boundingBox;}
+    [[nodiscard]] BoundingBox getBoundingBox() const { return boundingBox; }
     [[nodiscard]] std::vector<unsigned> getIndices() const { return indices; }
     [[nodiscard]] GLuint getVAO() const { return VAO; }
     [[nodiscard]] GLuint getEBO() const { return EBO; }

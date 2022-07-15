@@ -94,12 +94,12 @@ public:
         if (value > max) return max;
         return value;
     }
-    
+
     template <typename T>
     static T random(T min, T max) {
         std::default_random_engine generator(glfwGetTime());
         const std::uniform_real_distribution<float> distribution(min, max);
-        
+
         return distribution(generator);
     }
 
@@ -115,14 +115,26 @@ public:
     static std::string trim(const std::string& str) {
         size_t first = str.find_first_not_of(' ');
         if (std::string::npos == first) return str;
-        
+
         size_t last = str.find_last_not_of(' ');
-        
+
         return str.substr(first, (last - first + 1));
     }
 
     static float tetrahedronVolume(const Triangle& triangle, const glm::vec3& top) {
-        return (1.0f / 6.0f) * glm::abs(glm::dot(triangle.v0->position - top,
-                                                 glm::cross(triangle.v1->position - top, triangle.v2->position - top)));
+        return (1.0f / 6.0f) * glm::abs(dot(triangle.v0->position - top,
+                                            cross(triangle.v1->position - top, triangle.v2->position - top)));
+    }
+
+    static glm::vec3 SnapToAxis(const glm::vec3& vec) {
+        const float x = abs(vec.x);
+        const float y = abs(vec.y);
+        const float z = abs(vec.z);
+        
+        if (x > y && x > z) return {glm::sign(vec.x), 0, 0};
+        
+        if (y > x && y > z) return {0, glm::sign(vec.y), 0};
+        
+        return {0, 0, glm::sign(vec.z)};
     }
 };

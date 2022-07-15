@@ -6,11 +6,7 @@ void StaticMeshComponent::draw() {
 }
 
 
-void StaticMeshComponent::draw(const Transform& transform) {
-    SceneComponent::draw(transform);
-
-    if (mesh) mesh->draw(transform);
-}
+void StaticMeshComponent::draw(const Transform& transform) { if (mesh) mesh->draw(transform); }
 
 void StaticMeshComponent::tick() { SceneComponent::tick(); }
 

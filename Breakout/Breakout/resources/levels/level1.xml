@@ -27,14 +27,14 @@
                 Texture="meshes/brick/textures/TexturesCom_StripedMarble_1K_albedo.png"
                 HitPoints="3"
                 HitSound="audio/324734__150112__whiteballhittingsolid.wav"
-                BreakSound="audio/406266__anthousai__hit-hollow-03.wav"
+                BreakSound="audio/583964__soundsnapfx__sledgehammer-using-to-break-a-block-of-concrete.wav"
                 BreakScore="150"/>
         <!-- Impenetrable Brick -->
         <BrickType
                 Id="I"
                 Texture="meshes/brick/textures/TexturesCom_OutdoorFloor3_1K_albedo.png"
                 HitPoints="Infinite"
-                HitSound="audio/583964__soundsnapfx__sledgehammer-using-to-break-a-block-of-concrete.wav"/>
+                HitSound="audio/406266__anthousai__hit-hollow-03.wav"/>
     </BrickTypes>
     <Bricks>
         H H H H H H H H H H H H H H H H H H H H

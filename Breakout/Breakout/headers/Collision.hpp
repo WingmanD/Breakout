@@ -4,7 +4,7 @@
 struct CollisionResult {
     bool bCollided = false;
     glm::vec3 collisionPoint = {0, 0, 0};
-    glm::vec3 collisionNormal = {0, 0, 0};
+    glm::vec3 collisionNormal = {1, 0, 0};
 };
 
 class Collision {

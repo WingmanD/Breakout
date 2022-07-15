@@ -1,5 +1,6 @@
 #include "Transform.hpp"
 
+#include <iostream>
 #include <glm/gtx/quaternion.hpp>
 
 glm::mat4 Transform::getModelMatrix() const {
@@ -17,7 +18,6 @@ glm::mat4 Transform::getModelMatrix() const {
 
 glm::mat4 Transform::getViewMatrix() const { return inverse(getModelMatrix()); }
 
-//todo
 glm::vec3 Transform::getGlobalLocation() const {
     if (parent)
         return parent->getModelMatrix() * glm::vec4(Location, 1.0f);
@@ -34,20 +34,38 @@ glm::vec3 Transform::getGlobalRotation() const {
     return eulerAngles(globalRotation);
 }
 
-glm::vec3 Transform::getRelativeLocationFrom(Transform* other) const {
-    return inverse(other->getModelMatrix()) * glm::vec4(getGlobalLocation(), 1.0f);
+glm::vec3 Transform::toGlobal(glm::vec3 relativeLocation) const {
+    return getModelMatrix() * glm::vec4(relativeLocation, 1.0f);
+}
+
+glm::vec3 Transform::toLocal(glm::vec3 globalLocation) const {
+    return inverse(getModelMatrix()) * glm::vec4(globalLocation, 1.0f);
 }
 
 void Transform::attachTo(Transform* newParent) {
+    if(!newParent) {
+        std::cerr << "Trying to attach to nullptr" << std::endl;
+        return;
+    }
+    
     if (parent) detach();
 
     parent = newParent;
+    parent->children.emplace_back(this);
+    
     Location -= parent->getGlobalLocation();
 }
 
 void Transform::detach() {
     if (!parent) return;
-
+    
+    std::erase(parent->children, this);
+    
     Location = getGlobalLocation();
     parent = nullptr;
+}
+
+void Transform::destroy() {
+    detach();
+    for (auto child : children) child->destroy();
 }

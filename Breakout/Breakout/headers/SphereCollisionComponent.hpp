@@ -13,5 +13,8 @@ public:
     CollisionResult collide(Collision* other) override;
     bool isPointInside(const glm::vec3& point) override;
 
+    [[nodiscard]] float getRadius() const { return radius; }
+    void setRadius(const float newRadius) { this->radius = newRadius; }
+
     void init() override {}
 };

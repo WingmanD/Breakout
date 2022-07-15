@@ -9,7 +9,7 @@ class SoundEngine {
 public:
     SoundEngine();
     
-    std::shared_ptr<SoundCue> loadSoundCue(const std::filesystem::path& relativePath);
+    std::shared_ptr<SoundCue> loadSoundCue(const std::filesystem::path& path);
     bool removeSoundCue(std::shared_ptr<SoundCue> soundCue);
 
     ~SoundEngine();

@@ -118,10 +118,11 @@ private:
 
 struct Brick {
     int HP = 0;
+    bool bIsDestroyed = false;
     BreakoutLevelInfo::BrickTypeInfo* info = nullptr;
 
-    SoundCue* hitSound = nullptr;
-    SoundCue* breakSound = nullptr;
+    std::shared_ptr<SoundCue> hitSound = nullptr;
+    std::shared_ptr<SoundCue> breakSound = nullptr;
 
     StaticMeshComponent* meshComp = nullptr;
     BoxCollisionComponent* boxCollision = nullptr;
@@ -129,15 +130,24 @@ struct Brick {
     Brick(BreakoutLevelInfo::BrickTypeInfo* info): info(info) { HP = info->hitPoints; }
 
     void hit() {
-        if (hitSound) hitSound->play(0);
+        if (hitSound)
+            hitSound->play(0);
+
 
         if (HP != std::numeric_limits<int>::max()) {
             HP--;
-            if (HP <= 0) { if (breakSound) breakSound->play(0); }
+            if (HP <= 0) {
+                bIsDestroyed = true;
+
+                meshComp->destroy();
+                if (breakSound) breakSound->play(0);
+            }
         }
     }
 };
 
+
+// todo move to private in Breakout
 struct Ball {
     StaticMeshComponent* meshComp = nullptr;
     SphereCollisionComponent* sphereCollision = nullptr;
@@ -149,11 +159,18 @@ struct Ball {
         : meshComp(mesh_comp) {
         auto AABB = mesh_comp->getMesh()->getBoundingBox();
 
-        sphereCollision = new SphereCollisionComponent(radius);
-        sphereCollision->attachComponentToComponent(meshComp);
-        
         radius = (AABB.max.x - AABB.min.x) / 2.0f;
+
+        sphereCollision = new SphereCollisionComponent(radius);
+        sphereCollision->attachTo(meshComp);
     }
+};
+
+struct BreakoutPlayer {
+    StaticMeshComponent* mesh;
+    BoxCollisionComponent* boxCollision;
+
+
 };
 
 class BreakoutBoard : public Player {
