@@ -2,10 +2,12 @@
 #include <filesystem>
 
 #include "BoxCollisionComponent.hpp"
+#include "BreakoutBall.hpp"
+#include "BreakoutBrick.hpp"
+#include "Paddle.hpp"
 #include "Player.hpp"
 #include "SoundCue.hpp"
 #include "SphereCollisionComponent.hpp"
-#include "StaticMeshComponent.hpp"
 #include "Util.hpp"
 #include "tinyxml/tinyxml2.h"
 
@@ -84,7 +86,7 @@ struct BreakoutLevelInfo {
             if (line.empty()) continue;
 
             std::vector<std::string> brickNames = Util::split(line, ' ');
-            if (brickNames.size() != columnCount)
+            if (brickNames.size() != static_cast<unsigned long long>(columnCount))
                 throw std::runtime_error("BreakoutLevelInfo: " + path.string() + " is not a valid XML file");
 
 
@@ -116,70 +118,20 @@ private:
 
 };
 
-struct Brick {
-    int HP = 0;
-    bool bIsDestroyed = false;
-    BreakoutLevelInfo::BrickTypeInfo* info = nullptr;
-
-    std::shared_ptr<SoundCue> hitSound = nullptr;
-    std::shared_ptr<SoundCue> breakSound = nullptr;
-
-    StaticMeshComponent* meshComp = nullptr;
-    BoxCollisionComponent* boxCollision = nullptr;
-
-    Brick(BreakoutLevelInfo::BrickTypeInfo* info): info(info) { HP = info->hitPoints; }
-
-    void hit() {
-        if (hitSound)
-            hitSound->play(0);
-
-
-        if (HP != std::numeric_limits<int>::max()) {
-            HP--;
-            if (HP <= 0) {
-                bIsDestroyed = true;
-
-                meshComp->destroy();
-                if (breakSound) breakSound->play(0);
-            }
-        }
-    }
-};
-
-
-// todo move to private in Breakout
-struct Ball {
-    StaticMeshComponent* meshComp = nullptr;
-    SphereCollisionComponent* sphereCollision = nullptr;
-    glm::vec3 velocity = glm::vec3(0, 0, 0);
-    float radius = 0;
-
-    // todo transfer radius to collision 
-    explicit Ball(StaticMeshComponent* const mesh_comp)
-        : meshComp(mesh_comp) {
-        auto AABB = mesh_comp->getMesh()->getBoundingBox();
-
-        radius = (AABB.max.x - AABB.min.x) / 2.0f;
-
-        sphereCollision = new SphereCollisionComponent(radius);
-        sphereCollision->attachTo(meshComp);
-    }
-};
-
-struct BreakoutPlayer {
-    StaticMeshComponent* mesh;
-    BoxCollisionComponent* boxCollision;
-
-
-};
-
 class BreakoutBoard : public Player {
     std::map<std::string, StaticMesh*> brickNameSMeshMap;
-    std::vector<std::vector<Brick*>> bricks;
 
-    StaticMeshComponent* player = nullptr;
+    std::vector<std::vector<BreakoutBrick*>> bricks;
+    std::vector<BreakoutBall*> balls;
+    Paddle* paddle = nullptr;
 
     StaticMesh* ballMesh = nullptr;
+
+    BoxCollisionComponent* wallTop = nullptr;
+    BoxCollisionComponent* wallLeft = nullptr;
+    BoxCollisionComponent* wallRight = nullptr;
+    BoxCollisionComponent* killVolume = nullptr;
+
 
     int rowCount = 0;
     int columnCount = 0;
@@ -187,19 +139,14 @@ class BreakoutBoard : public Player {
     float cellWidth = 0;
     float cellHeight = 0;
 
-    float brickWidth = 0;
-    float brickHeight = 0;
-
-    float playerWidth = 0;
-    float playerHeight = 0;
-
     float boardWidth = 0;
-    std::vector<Ball*> balls;
+    float totalBoardHeight = 0;
+
 
     bool bDisabled = true;
 
-    float ballSpeed = 1.0f;
-    float totalBoardHeight = 0;
+    float ballSpeed = 3.0f;
+
 
 public:
     BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& level);
@@ -214,10 +161,10 @@ private:
     void spawnBall();
     void start();
     void applyBallMovement(float deltaTime);
-    void cellIndicesFromBallLocation(Ball* ball, int& row, int& column);
-    void checkCollision(Ball* ball);
-    void checkCollision(Ball* ball, int row, int column);
-    glm::vec2 getCellCenter(int row, int column);
+    void cellIndicesFromBallLocation(BreakoutBall* ball, int& row, int& column) const;
+    void checkCollision(BreakoutBall* ball);
+    void checkCollision(BreakoutBall* ball, int row, int column);
+    [[nodiscard]] glm::vec2 getCellCenter(int row, int column) const;
 
 
 };

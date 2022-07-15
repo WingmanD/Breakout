@@ -144,7 +144,7 @@ public:
 
     [[nodiscard]] std::vector<glm::vec3> calculateNormals() const;
 
-    ~StaticMesh() {
+    virtual ~StaticMesh() {
         glDeleteBuffers(4, VBO);
         glDeleteBuffers(1, &EBO);
         glDeleteVertexArrays(1, &VAO);

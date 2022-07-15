@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 
+#include "GameMode.hpp"
 #include "Scene.hpp"
 #include "Renderer.hpp"
 #include "SoundEngine.hpp"
@@ -25,6 +26,7 @@ class Engine {
 
     Player* activePlayer = nullptr;
 
+    GameMode* gameMode = nullptr;
 
 public:
     Engine(std::filesystem::path runtimePath);
@@ -38,18 +40,22 @@ public:
     [[nodiscard]] int getWidth() const { return width; }
     [[nodiscard]] int getHeight() const { return height; }
 
-    [[nodiscard]] int* getWidthRef()  { return &width; }
-    [[nodiscard]] int *getHeightRef()  { return &height; }
+    [[nodiscard]] int* getWidthRef() { return &width; }
+    [[nodiscard]] int* getHeightRef() { return &height; }
     [[nodiscard]] glm::vec2 getCursorPosition() const { return cursorPos; }
     [[nodiscard]] Scene* getScene() const { return scene; }
     [[nodiscard]] Renderer* getRenderer() const { return renderer; }
     [[nodiscard]] Player* getPossessedPlayer() const { return activePlayer; }
+
+    [[nodiscard]] GameMode* getGameMode() const { return gameMode; }
+    void setGameMode(GameMode* const newGameMode) { gameMode = newGameMode; }
 
     void setCursorVisible(bool visible) const;
     void setPaused(bool paused);
     void setScene(Scene* newScene) { this->scene = newScene; }
 
     ~Engine();
+    
 private:
     void initOpenGL();
     void initUI();

@@ -137,6 +137,7 @@ void StaticMesh::init() {
 void StaticMesh::draw() { draw(Transform()); }
 
 void StaticMesh::draw(const Transform& transform) {
+    material->getShader()->use();
     glBindVertexArray(VAO);
     glUniformMatrix4fv(glGetUniformLocation(material->getShader()->ID, "model"), 1, GL_FALSE,
                        &transform.getModelMatrix()[0][0]);
@@ -145,6 +146,8 @@ void StaticMesh::draw(const Transform& transform) {
 
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+    
+    glUseProgram(0);
 }
 
 std::vector<glm::vec3> StaticMesh::calculateNormals() const {
