@@ -13,22 +13,27 @@ struct LightDataEntry {
 
 class Renderer {
     Scene* scene;
-    
+
+    bool unlit = false;
+
     GLuint UBO_ViewData{};
     GLuint SSBO_LightData{};
-
-public:
-    Renderer(Scene* scene);
-
-    void render() const;
 
     inline void initViewData();
     inline void updateViewData() const;
 
     inline void initLightData();
     inline void updateLightData() const;
-    
+
+public:
+    Renderer(Scene* scene);
+
+    void render() const;
+
+    [[nodiscard]] bool isUnlit() const { return unlit; }
     [[nodiscard]] Scene* getScene() const { return scene; }
+
+    void setUnlit(const bool status) { this->unlit = status; }
     void setScene(Scene* newScene) { this->scene = newScene; }
 
     ~Renderer();

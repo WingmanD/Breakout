@@ -14,7 +14,7 @@ struct Light {
     float intensity;
 };
 
-layout(std430, binding = 1) readonly buffer LightData {
+layout(std430, binding = 2) readonly buffer LightData {
     Light lights[];
 };
 
@@ -24,11 +24,12 @@ uniform vec3 specularColor;
 uniform float shininess;
 uniform float opacity;
 
-layout (std140) uniform ViewData {
+layout (std140, binding = 0) uniform ViewData {
     mat4 view;
     mat4 projection;
 
-    vec3 cameraPos;
+    vec4 cameraPos;
+    vec4 unlit;
 };
 
 uniform int diffuseMapPresent;
@@ -42,16 +43,9 @@ void main()
     vec3 n = fragment.normal;
     vec3 postion = fragment.position;
 
-    vec3 v = normalize(cameraPos - postion);
+    vec3 v = normalize(cameraPos.xyz - postion);
 
     vec3 ambient = ambientColor * 0.05;
-
-    /*if (diffuseMapPresent == 1) diffuse = lightIntensity * lightColor * texture(diffuseMap, fragment.texCoord).xyz * max(dot(l, n), 0);
-    else diffuse = lightIntensity * lightColor * diffuseColor * max(dot(l, n), 0);*/
-
-    /*vec3 specular = vec3(0);
-    if (specularMapPresent == 1) specular = lightIntensity * lightColor * texture(specularMap, fragment.texCoord).xyz * pow(max(dot(r, v), 0), shininess);
-    else specular = lightIntensity * lightColor * specularColor * pow(max(dot(r, v), 0), shininess);*/
 
     vec3 diffuse = vec3(0);
     vec3 specular = vec3(0);
@@ -84,10 +78,11 @@ void main()
     if (specularMapPresent == 1) specular *= texture(specularMap, fragment.texCoord).xyz;
     else specular *= specularColor;
 
-    // todo remove this (unlit)
-    if (diffuseMapPresent == 1) diffuse = texture(diffuseMap, fragment.texCoord).xyz;
-    else diffuse = diffuseColor;
-
+    if (unlit.x == 1) {
+        if (diffuseMapPresent == 1) diffuse = texture(diffuseMap, fragment.texCoord).xyz;
+        else diffuse = diffuseColor;
+    }
+    
     vec3 color = ambient + diffuse + specular;
 
     FragColor = vec4(color, opacity);

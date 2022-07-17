@@ -16,7 +16,7 @@ glm::mat4 Transform::getModelMatrix() const {
     return model;
 }
 
-glm::mat4 Transform::getViewMatrix() const { return inverse(getModelMatrix()); }
+glm::mat4 Transform::getViewMatrix() const { return glm::mat4(1); }
 
 glm::vec3 Transform::getGlobalLocation() const {
     if (parent)
@@ -34,6 +34,12 @@ glm::vec3 Transform::getGlobalRotation() const {
     return eulerAngles(globalRotation);
 }
 
+glm::vec3 Transform::getGlobalScale() const {
+    if (!parent) return Scale;
+    
+    return parent->getGlobalScale() * Scale;
+}
+
 glm::vec3 Transform::toGlobal(glm::vec3 relativeLocation) const {
     return getModelMatrix() * glm::vec4(relativeLocation, 1.0f);
 }
@@ -43,24 +49,24 @@ glm::vec3 Transform::toLocal(glm::vec3 globalLocation) const {
 }
 
 void Transform::attachTo(Transform* newParent) {
-    if(!newParent) {
+    if (!newParent) {
         std::cerr << "Trying to attach to nullptr" << std::endl;
         return;
     }
-    
+
     if (parent) detach();
 
     parent = newParent;
     parent->children.emplace_back(this);
-    
+
     Location -= parent->getGlobalLocation();
 }
 
 void Transform::detach() {
     if (!parent) return;
-    
+
     std::erase(parent->children, this);
-    
+
     Location = getGlobalLocation();
     parent = nullptr;
 }

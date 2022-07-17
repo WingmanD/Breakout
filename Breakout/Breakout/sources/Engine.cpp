@@ -4,9 +4,10 @@
 #include <iostream>
 #include <glad/glad.h>
 
-#include <imgui.h>
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
+
+#include "GameMode.hpp"
 
 Engine::Engine(std::filesystem::path runtimePath) : runtimePath(std::move(runtimePath)) {
     soundEngine = new SoundEngine();
@@ -15,6 +16,7 @@ Engine::Engine(std::filesystem::path runtimePath) : runtimePath(std::move(runtim
 
     scene = new Scene();
     renderer = new Renderer(scene);
+    widgetManager = new WidgetManager();
 }
 
 void Engine::run() {
@@ -28,23 +30,14 @@ void Engine::run() {
         glfwPollEvents();
 
         if (!bPaused && scene) scene->tick(deltaTime);
-        if(renderer) renderer->render();
+        if (renderer) renderer->render();
 
-        /*ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        //TODO render widgets
-
-        ImGui::End();
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());*/
-
+        ImGui::SetNextWindowSize({static_cast<float>(width), static_cast<float>(height)});
+        if (widgetManager) widgetManager->drawWidgets();
 
         glfwSwapBuffers(windowOGL);
     }
-    
+
 }
 
 void Engine::possess(Player* player) { this->activePlayer = player; }
@@ -89,7 +82,7 @@ void Engine::initOpenGL() {
     glfwSwapInterval(0);
 }
 
-void Engine::initUI() {
+void Engine::initUI() const {
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -104,19 +97,27 @@ void Engine::framebufferSizeCallback(GLFWwindow* window, int newWidth, int newHe
     this->height = newHeight;
 
     glViewport(0, 0, width, height);
+
+    if (gameMode) gameMode->onWindowSizeChange(width, height);
+    if (activePlayer) activePlayer->onWindowSizeChange(width, height);
 }
 
 void Engine::cursorCallback(GLFWwindow* window, double xpos, double ypos) {
-    cursorPos.x = xpos;
-    cursorPos.y = ypos;
-    
+    cursorPos.x = static_cast<float>(xpos);
+    cursorPos.y = static_cast<float>(ypos);
+
+    if (gameMode) gameMode->onMouseMove(xpos, ypos);
     if (activePlayer) activePlayer->onMouseMove(xpos, ypos);
+
 }
 
 void Engine::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+    if (gameMode) gameMode->onScroll(xoffset, yoffset);
     if (activePlayer) activePlayer->onScroll(xoffset, yoffset);
 }
+
 void Engine::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (gameMode) gameMode->onKey(key, scancode, action, mods);
     if (activePlayer) activePlayer->onKey(key, scancode, action, mods);
 }
 
@@ -126,7 +127,10 @@ void Engine::setPaused(bool paused) { bPaused = paused; }
 Engine::~Engine() {
     delete scene;
     delete renderer;
-    
+    delete widgetManager;
+    delete soundEngine;
+    delete gameMode;
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

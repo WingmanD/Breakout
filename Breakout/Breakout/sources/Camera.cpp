@@ -49,6 +49,7 @@ glm::mat4 Camera::getViewMatrix() {
 
 glm::mat4 Camera::getProjectionMatrix() const {
     const float aspectRatio = static_cast<float>(*width) / static_cast<float>(*height);
+    if (*width == 0 || *height == 0) return glm::mat4(1.0f);
 
     return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
 }

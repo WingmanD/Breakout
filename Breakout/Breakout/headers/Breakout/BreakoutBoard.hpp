@@ -1,9 +1,11 @@
 ﻿#pragma once
 #include <filesystem>
+#include <functional>
 
 #include "BoxCollisionComponent.hpp"
 #include "BreakoutBall.hpp"
 #include "BreakoutBrick.hpp"
+#include "Light.hpp"
 #include "Paddle.hpp"
 #include "Player.hpp"
 #include "SoundCue.hpp"
@@ -118,12 +120,54 @@ private:
 
 };
 
+
 class BreakoutBoard : public Player {
-    std::map<std::string, StaticMesh*> brickNameSMeshMap;
+
+    struct Powerup {
+        double duration = 5.0;
+        std::function<void(BreakoutBoard*)> startEffect;
+        std::function<void(BreakoutBoard*)> endEffect;
+
+        double startTime = 0.0;
+
+        BreakoutBoard* board;
+
+        bool isActive = false;
+
+        Powerup(BreakoutBoard* board, double duration, std::function<void(BreakoutBoard*)> newStartEffect,
+                std::function<void(BreakoutBoard*)> newEndEffect) : duration(duration), startEffect(
+                                                                        std::move(newStartEffect)),
+                                                                    endEffect(std::move(newEndEffect)), board(board) {
+        }
+
+        void start() {
+            isActive = true;
+            startTime = glfwGetTime();
+            startEffect(board);
+        }
+
+        void stop() {
+            if(!isActive) return;
+            
+            isActive = false;
+            endEffect(board);
+        }
+
+        bool checkActive() {
+           return isActive && startTime + duration < glfwGetTime();
+        }
+    };
+
+    StaticMeshComponent* background;
 
     std::vector<std::vector<BreakoutBrick*>> bricks;
     std::vector<BreakoutBall*> balls;
+
+    std::vector<BreakoutBall*> ballsToAdd;
+
     Paddle* paddle = nullptr;
+
+    
 
     StaticMesh* ballMesh = nullptr;
 
@@ -132,6 +176,16 @@ class BreakoutBoard : public Player {
     BoxCollisionComponent* wallRight = nullptr;
     BoxCollisionComponent* killVolume = nullptr;
 
+    Light* light = nullptr;
+
+    std::vector<Powerup*> powerups;
+    Powerup* lightsOutPowerup = nullptr;
+    Powerup* slowMotionPowerup = nullptr;
+    Powerup* speedUpPowerup = nullptr;
+    Powerup* largeBallPowerup = nullptr;
+    Powerup* smallBallPowerup = nullptr;
+
+    int bricksLeft = 0;
 
     int rowCount = 0;
     int columnCount = 0;
@@ -143,9 +197,13 @@ class BreakoutBoard : public Player {
     float totalBoardHeight = 0;
 
 
-    bool bDisabled = true;
+    bool bPaused = true;
 
-    float ballSpeed = 3.0f;
+    float ballSpeed = 7.0f;
+
+    float boardSize = 0;
+
+    glm::vec3 idealCameraPosition = {0, 0, 0};
 
 
 public:
@@ -157,8 +215,17 @@ public:
 
     void onMouseMove(double xpos, double ypos) override;
 
+    void onWindowSizeChange(int width, int height) override;
+
+    [[nodiscard]] float getBoardSize() const { return boardSize; }
+    [[nodiscard]] glm::vec3 getIdealCameraPosition() const { return idealCameraPosition; }
+
+    void setPaused(const bool status) { bPaused = status; }
+
+    void destroy() override;
+
 private:
-    void spawnBall();
+    void spawnBallAttached();
     void start();
     void applyBallMovement(float deltaTime);
     void cellIndicesFromBallLocation(BreakoutBall* ball, int& row, int& column) const;
@@ -166,5 +233,5 @@ private:
     void checkCollision(BreakoutBall* ball, int row, int column);
     [[nodiscard]] glm::vec2 getCellCenter(int row, int column) const;
 
-
+    void addPowerups();
 };

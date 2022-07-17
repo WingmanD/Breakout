@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Light.hpp"
 #include "Object.hpp"
 
 #include "SphereCollisionComponent.hpp"
@@ -10,6 +11,8 @@ class BreakoutBall : public Object {
     glm::vec3 velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 
     float radius = 0;
+
+    Light* light;
 
 public:
     explicit BreakoutBall(Engine* owner, StaticMesh* mesh);
@@ -23,4 +26,6 @@ public:
     void setVelocity(const glm::vec3& newVelocity) { this->velocity = newVelocity; }
 
     bool collideWith(Collision* other);
+
+    void destroy() override;
 };

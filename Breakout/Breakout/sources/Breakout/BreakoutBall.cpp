@@ -10,9 +10,13 @@ BreakoutBall::BreakoutBall(Engine* owner, StaticMesh* mesh) : Object(owner) {
     meshComp = new StaticMeshComponent(mesh);
     meshComp->attachTo(this);
 
-
     sphereCollision = new SphereCollisionComponent(radius);
     sphereCollision->attachTo(meshComp);
+
+    light = new Light({0, 0, 0}, {1, 1, 1}, 0.5f);
+    light->attachTo(this);
+    light->setLocation({0, 1, 0});
+    engine->getScene()->addLight(light);
 }
 
 bool BreakoutBall::collideWith(Collision* other) {
@@ -26,4 +30,10 @@ bool BreakoutBall::collideWith(Collision* other) {
     }
 
     return false;
+}
+
+void BreakoutBall::destroy() {
+    Object::destroy();
+    engine->getScene()->removeLight(light);
+    light->destroy();
 }

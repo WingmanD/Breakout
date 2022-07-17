@@ -1,14 +1,15 @@
 ﻿#pragma once
 
-
-#include "GameMode.hpp"
 #include "Scene.hpp"
 #include "Renderer.hpp"
 #include "SoundEngine.hpp"
 #include "Player.hpp"
+#include "WidgetManager.hpp"
 
 #include "GLFW/glfw3.h"
 #include "glm/vec2.hpp"
+
+class GameMode;
 
 class Engine {
 
@@ -23,6 +24,7 @@ class Engine {
 
     Scene* scene = nullptr;
     Renderer* renderer = nullptr;
+    WidgetManager* widgetManager = nullptr;
 
     Player* activePlayer = nullptr;
 
@@ -46,19 +48,20 @@ public:
     [[nodiscard]] Scene* getScene() const { return scene; }
     [[nodiscard]] Renderer* getRenderer() const { return renderer; }
     [[nodiscard]] Player* getPossessedPlayer() const { return activePlayer; }
-
     [[nodiscard]] GameMode* getGameMode() const { return gameMode; }
-    void setGameMode(GameMode* const newGameMode) { gameMode = newGameMode; }
+    [[nodiscard]] WidgetManager* getWidgetManager() const { return widgetManager; }
+    [[nodiscard]] GLFWwindow* getOpenGLWindow() const { return windowOGL; }
 
     void setCursorVisible(bool visible) const;
     void setPaused(bool paused);
     void setScene(Scene* newScene) { this->scene = newScene; }
+    void setGameMode(GameMode* const newGameMode) { gameMode = newGameMode; }
 
     ~Engine();
-    
+
 private:
     void initOpenGL();
-    void initUI();
+    void initUI() const;
 
     void framebufferSizeCallback(GLFWwindow* window, int width, int height);
     void cursorCallback(GLFWwindow* window, double xpos, double ypos);

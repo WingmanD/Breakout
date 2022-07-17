@@ -173,12 +173,14 @@ public:
         this->textureScale = newTextureScale;
         shader->use();
         glUniform2fv(glGetUniformLocation(shader->ID, "textureScale"), 1, value_ptr(textureScale));
+        glUseProgram(0);
     }
 
     void setTextureOffset(const glm::vec2& newTextureOffset) {
         textureOffset = newTextureOffset;
         shader->use();
         glUniform2fv(glGetUniformLocation(shader->ID, "textureOffset"), 1, value_ptr(textureOffset));
+        glUseProgram(0);
     }
 
 private:

@@ -12,5 +12,5 @@ public:
 
     void setColor(glm::vec3 newColor);
     void setIntensity(float newIntensity);
-
+    
 };

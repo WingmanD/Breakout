@@ -103,6 +103,8 @@ public:
         return distribution(generator);
     }
 
+    static bool rollDice(float chance) { return random(0.0f, 1.0f) < chance; }
+
     static std::vector<std::string> split(const std::string& input, char delimiter) {
         std::vector<std::string> out;
         std::stringstream ss(input);
@@ -130,11 +132,11 @@ public:
         const float x = abs(vec.x);
         const float y = abs(vec.y);
         const float z = abs(vec.z);
-        
+
         if (x > y && x > z) return {glm::sign(vec.x), 0, 0};
-        
+
         if (y > x && y > z) return {0, glm::sign(vec.y), 0};
-        
+
         return {0, 0, glm::sign(vec.z)};
     }
 };
