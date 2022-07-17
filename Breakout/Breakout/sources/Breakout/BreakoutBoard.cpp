@@ -237,8 +237,6 @@ void BreakoutBoard::onWindowSizeChange(int width, int height) {
     boardSize = std::max(aspectRatio * 9.0f / 16.0f * boardWidth,
                          1 / aspectRatio * static_cast<float>(rowCount) * cellHeight) * 1.5f;
     background->setScale(glm::vec3(boardSize));
-
-    background->getMesh()->getMaterial()->setTextureScale(glm::vec2(boardSize));
 }
 
 void BreakoutBoard::destroy() {
@@ -302,8 +300,8 @@ void BreakoutBoard::checkCollision(BreakoutBall* ball, int row, int column) {
     ball->collideWith(paddle->getBoxCollision());
 
     // check if ball is under the player
-    if (ball->collideWith(killVolume) /*|| distance(ball->getLocation(), paddle->getLocation()) > totalBoardHeight *
-        1.5f*/) {
+    if (ball->collideWith(killVolume) || distance(ball->getLocation(), paddle->getLocation()) > totalBoardHeight *
+        10.0f) {
         std::erase(balls, ball);
         ball->destroy();
 
