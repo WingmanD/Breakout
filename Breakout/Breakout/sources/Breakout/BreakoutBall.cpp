@@ -3,10 +3,10 @@
 #include "Engine.hpp"
 
 BreakoutBall::BreakoutBall(Engine* owner, StaticMesh* mesh) : Object(owner) {
-
+    // init components and light
     auto boundingBox = mesh->getBoundingBox();
     radius = (boundingBox.max.x - boundingBox.min.x) / 2.0f;
-
+    
     meshComp = new StaticMeshComponent(mesh);
     meshComp->attachTo(this);
 
@@ -20,6 +20,7 @@ BreakoutBall::BreakoutBall(Engine* owner, StaticMesh* mesh) : Object(owner) {
 }
 
 bool BreakoutBall::collideWith(Collision* other) {
+    // on collision, bounce the ball
     const CollisionResult hit = sphereCollision->collide(other);
     if (hit.bCollided) {
         move(hit.collisionNormal *

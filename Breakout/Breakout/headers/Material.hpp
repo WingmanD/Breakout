@@ -68,6 +68,11 @@ struct Texture2D {
     }
 };
 
+/**
+ *  Material class handles the loading of textures and material parameters.
+ *  It can be initialized from file or manually.
+ *  Passes data to shader programs.
+ */
 class Material {
     std::string name;
 
@@ -139,9 +144,11 @@ public:
 
     void setup();
 
+    /**
+     * Set texture in shader for given texture type.
+     */
     void setTextureMap(TextureType type, const std::filesystem::path& path);
-
-
+    
     [[nodiscard]] std::string getName() const { return name; }
     [[nodiscard]] Shader* getShader() const { return shader; }
     [[nodiscard]] glm::vec3 getAmbientColor() const { return ambient; }
@@ -158,60 +165,45 @@ public:
 
     void setAmbient(const glm::vec3& newAmbient) {
         this->ambient = newAmbient;
-        shader->use();
-        glUniform3fv(glGetUniformLocation(shader->ID, "ambientColor"), 1, &ambient[0]);
-        glUseProgram(0);
     }
 
     void setDiffuse(const glm::vec3& newDiffuse) {
         this->diffuse = newDiffuse;
-        shader->use();
-        glUniform3fv(glGetUniformLocation(shader->ID, "diffuseColor"), 1, &diffuse[0]);
-        glUseProgram(0);
     }
 
     void setSpecular(const glm::vec3& newSpecular) {
         this->specular = newSpecular;
-        shader->use();
-        glUniform3fv(glGetUniformLocation(shader->ID, "specularColor"), 1, &specular[0]);
-        glUseProgram(0);
     }
 
     void setEmissive(const glm::vec3& newEmissive) {
         this->emissive = newEmissive;
-        shader->use();
-        glUniform3fv(glGetUniformLocation(shader->ID, "emissiveColor"), 1, &emissive[0]);
-        glUseProgram(0);
     }
+
     void setShininess(float newShininess) {
         this->shininess = newShininess;
-        shader->use();
-        glUniform1f(glGetUniformLocation(shader->ID, "shininess"), shininess);
-        glUseProgram(0);
     }
+
     void setOpacity(float newOpacity) {
         this->opacity = newOpacity;
-        shader->use();
-        glUniform1f(glGetUniformLocation(shader->ID, "opacity"), opacity);
-        glUseProgram(0);
     }
 
     void setTextureScale(const glm::vec2& newTextureScale) {
         this->textureScale = newTextureScale;
-        shader->use();
-        glUniform2fv(glGetUniformLocation(shader->ID, "textureScale"), 1, value_ptr(textureScale));
-        glUseProgram(0);
     }
 
     void setTextureOffset(const glm::vec2& newTextureOffset) {
         textureOffset = newTextureOffset;
-        shader->use();
-        glUniform2fv(glGetUniformLocation(shader->ID, "textureOffset"), 1, value_ptr(textureOffset));
-        glUseProgram(0);
     }
 
 private:
+    /**
+     * Load textures from asset file.
+     */
     void loadTextures(const aiMaterial* material, const std::filesystem::path& textureDirPath);
+
+    /**
+     * Set up texture uniforms.
+     */
     void setupTexture(Texture2D* texture);
 
 };

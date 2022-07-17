@@ -2,7 +2,9 @@
 #include <filesystem>
 #include "SoundCue.hpp"
 
-
+/**
+ *  Engine subsystem that manages sound effects.
+ */
 class SoundEngine {
     std::vector<std::shared_ptr<SoundCue>> soundCues;
     

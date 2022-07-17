@@ -108,7 +108,6 @@ void Engine::cursorCallback(GLFWwindow* window, double xpos, double ypos) {
 
     if (gameMode) gameMode->onMouseMove(xpos, ypos);
     if (activePlayer) activePlayer->onMouseMove(xpos, ypos);
-
 }
 
 void Engine::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
@@ -122,7 +121,10 @@ void Engine::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
 }
 
 
-void Engine::setPaused(bool paused) { bPaused = paused; }
+void Engine::setPaused(bool paused) {
+    bPaused = paused;
+    if (gameMode) paused ? gameMode->pause() : gameMode->resume();
+}
 
 Engine::~Engine() {
     delete scene;

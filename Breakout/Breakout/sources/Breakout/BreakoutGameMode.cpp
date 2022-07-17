@@ -34,6 +34,13 @@ BreakoutGameMode::BreakoutGameMode(Engine* owner, int lives) : GameMode(owner), 
     wonWidget = new WonWidget(this, engine->getWidthRef(), engine->getHeightRef());
     engine->getWidgetManager()->addWidget(wonWidget);
     wonWidget->setVisibility(false);
+
+    lostBallCue = engine->getSoundEngine()->loadSoundCue(
+        engine->getRuntimePath() / "resources/audio/69839__meutecee__brasshit-11.wav");
+    lostGameCue = engine->getSoundEngine()->loadSoundCue(
+        engine->getRuntimePath() / "resources/audio/160883__hxcpotato__obscure-sfx-hit-1.wav");
+    wonGameCue = engine->getSoundEngine()->loadSoundCue(
+        engine->getRuntimePath() / "resources/audio/534017__robinhood76__09569-trumpets-ta-da-fanfare.wav");
 }
 
 void BreakoutGameMode::start() {
@@ -52,11 +59,15 @@ void BreakoutGameMode::end() {
     // show game over or won widget depending on whether the lives count
     engine->setCursorVisible(true);
     scoreWidget->setVisibility(false);
-    if (currentLives <= 0) gameOverWidget->setVisibility(true);
+    if (currentLives <= 0) {
+        gameOverWidget->setVisibility(true);
+        if (lostGameCue) lostGameCue->play(0);
+    }
     else {
         // if we have lives left, score is multiplied by lives count
         score *= currentLives;
         wonWidget->setVisibility(true);
+        if (wonGameCue) wonGameCue->play(0);
     }
     bPaused = true;
     bEndScreen = true;
@@ -80,6 +91,7 @@ void BreakoutGameMode::lostBall() {
 
         end();
     }
+    else { if (lostBallCue) lostBallCue->play(0); }
 }
 
 void BreakoutGameMode::pause() {
@@ -100,6 +112,7 @@ void BreakoutGameMode::resume() {
 }
 
 void BreakoutGameMode::openMainMenu() {
+    // return to main menu
     engine->setCursorVisible(true);
 
     if (pauseMenuWidget)
@@ -111,8 +124,6 @@ void BreakoutGameMode::openMainMenu() {
         board->destroy();
         board = nullptr;
     }
-
-
     if (mainMenuWidget) mainMenuWidget->setVisibility(true);
 
     if (gameOverWidget)
@@ -124,6 +135,8 @@ void BreakoutGameMode::openMainMenu() {
 
     bInMainMenu = true;
     bEndScreen = false;
+
+    engine->getScene()->getActiveCamera()->setLocation({0, 1, 0});
 }
 
 
@@ -131,13 +144,18 @@ void BreakoutGameMode::loadNextLevel() {
     level++;
     currentLives++;
 
+    engine->getRenderer()->setUnlit(true);
 
     auto oldBoard = board;
 
     std::string levelFile = "levels/level" + std::to_string(level) + ".xml";
     std::filesystem::path xmlPath = (engine->getRuntimePath() / "resources" / levelFile);
-    if (!exists(xmlPath)) end();
-    
+
+    if (!exists(xmlPath) || !is_regular_file(xmlPath)) {
+        end();
+        return;
+    }
+
     // create new board and load level
     board = new BreakoutBoard(engine, BreakoutLevelInfo(xmlPath));
     engine->getScene()->addObject(board);
@@ -150,6 +168,7 @@ void BreakoutGameMode::loadNextLevel() {
         engine->getScene()->removeObject(oldBoard);
         oldBoard->destroy();
     }
+
 
 }
 

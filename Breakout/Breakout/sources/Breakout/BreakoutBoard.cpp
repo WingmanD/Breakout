@@ -45,7 +45,6 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
 
     boardSize = std::max(boardWidth, totalBoardHeight) * 1.5f;
 
-    planeMesh->getMaterial()->setTextureScale(glm::vec2(boardSize));
     background->attachTo(this);
     background->setScale(glm::vec3(boardSize));
     background->setLocation({0, -0.5, 0});
@@ -85,7 +84,7 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
         std::shared_ptr<SoundCue> hitSound;
         std::shared_ptr<SoundCue> breakSound;
     };
-    
+
     std::map<std::string, BrickData> brickDataCache;
     for (auto [name, type] : level.brickTypeMap) {
         auto mesh = new StaticMesh(*brickMesh);
@@ -168,27 +167,21 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
                                        board->engine->getRenderer()->setUnlit(false);
                                    },
                                    [](BreakoutBoard* board) { board->engine->getRenderer()->setUnlit(true); });
-    speedUpPowerup = new Powerup(this, 5.0, [](BreakoutBoard* board) {
-                                     board->ballSpeed *= 1.5f;
-                                     std::cout << "speed up" << std::endl;
-                                 },
-                                 [](BreakoutBoard* board) {
-                                     board->ballSpeed /= 1.5f;
-                                     std::cout << "speed up end" << std::endl;
-                                 });
+    speedUpPowerup = new Powerup(this, 5.0, [](BreakoutBoard* board) { board->ballSpeed *= 1.5f; },
+                                 [](BreakoutBoard* board) { board->ballSpeed /= 1.5f; });
     slowMotionPowerup = new Powerup(this, 5.0, [](BreakoutBoard* board) { board->ballSpeed /= 1.5f; },
                                     [](BreakoutBoard* board) { board->ballSpeed *= 1.5f; });
     largeBallPowerup = new Powerup(this, 5.0, [](BreakoutBoard* board) {
-                                       for (auto ball : board->balls) ball->scale(glm::vec3(1.5f));
+                                       for (auto ball : board->balls) ball->setScale(glm::vec3(1.5f));
                                    },
                                    [](BreakoutBoard* board) {
-                                       for (auto ball : board->balls) ball->scale(glm::vec3(1 / 1.5f));
+                                       for (auto ball : board->balls) ball->setScale(glm::vec3(1 / 1.5f));
                                    });
     smallBallPowerup = new Powerup(this, 5.0, [](BreakoutBoard* board) {
-                                       for (auto ball : board->balls) ball->scale(glm::vec3(1 / 1.5f));
+                                       for (auto ball : board->balls) ball->setScale(glm::vec3(1 / 1.5f));
                                    },
                                    [](BreakoutBoard* board) {
-                                       for (auto ball : board->balls) ball->scale(glm::vec3(1.5f));
+                                       for (auto ball : board->balls) ball->setScale(glm::vec3(1.0f));
                                    });
 
     powerups.emplace_back(lightsOutPowerup);
@@ -196,6 +189,9 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
     powerups.emplace_back(slowMotionPowerup);
     powerups.emplace_back(largeBallPowerup);
     powerups.emplace_back(smallBallPowerup);
+
+    powerUpSound = engine->getSoundEngine()->loadSoundCue(
+        engine->getRuntimePath() / "resources/audio/498477__phonosupf__trumpet-call.wav");
 }
 
 void BreakoutBoard::tick(double deltaTime) {
@@ -222,11 +218,8 @@ void BreakoutBoard::tick(double deltaTime) {
 
 void BreakoutBoard::onKey(int key, int scancode, int action, int mods) {
     // space key starts the game
-    if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
-        if (bPaused) { start(); }
-        else { std::cout << "cant start - board is not paused"; }
-    }
-    
+    if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE)
+        if (bPaused) start();
 }
 
 void BreakoutBoard::onMouseMove(double xpos, double ypos) {
@@ -252,7 +245,7 @@ void BreakoutBoard::onWindowSizeChange(int width, int height) {
 void BreakoutBoard::destroy() {
     Player::destroy();
 
-    delete[] powerups.data();
+    engine->getRenderer()->setUnlit(true);
 
     engine->getScene()->removeLight(light);
     light->destroy();
@@ -269,17 +262,17 @@ void BreakoutBoard::spawnBallAttached() {
 
 void BreakoutBoard::start() {
     // launch the ball in random direction
-    if (engine->getGameMode()->isPaused()) {
-        std::cout << "cant start - gamemode is paused" << std::endl;
+    if (engine->getGameMode()->isPaused())
         return;
-    }
 
     bPaused = false;
     for (auto ball : balls) {
         ball->attachTo(this);
 
+
         // set ball direction to upwards from player but randomize a little bit
-        ball->setVelocity(normalize(glm::vec3(Util::random(-3.0f, 3.0f), 0.0f, -1.0f)));
+        ball->setVelocity({0, 0, -1});
+        //ball->setVelocity(normalize(glm::vec3(Util::random(-3.0f, 3.0f), 0.0f, -1.0f)));
     }
 }
 
@@ -311,8 +304,8 @@ void BreakoutBoard::checkCollision(BreakoutBall* ball, int row, int column) {
     ball->collideWith(paddle->getBoxCollision());
 
     // check if ball is under the player
-    if (ball->collideWith(killVolume) || distance(ball->getLocation(), paddle->getLocation()) > totalBoardHeight *
-        1.5f) {
+    if (ball->collideWith(killVolume) /*|| distance(ball->getLocation(), paddle->getLocation()) > totalBoardHeight *
+        1.5f*/) {
         std::erase(balls, ball);
         ball->destroy();
 
@@ -343,9 +336,12 @@ void BreakoutBoard::checkCollision(BreakoutBall* ball, int row, int column) {
             bricks[row][column] = nullptr;
             brick->destroy();
             bricksLeft--;
-            if (bricksLeft <= 0)
+            if (bricksLeft <= 0) {
+                bPaused = true;
+                engine->getRenderer()->setUnlit(true);
                 if (const auto gameMode = dynamic_cast<BreakoutGameMode*>(engine->getGameMode()))
                     gameMode->loadNextLevel();
+            }
         }
 
         // add an additional ball at the current ball location
@@ -384,8 +380,8 @@ void BreakoutBoard::applyBallMovement(float deltaTime) {
 }
 
 void BreakoutBoard::addPowerups() {
-    
-    if (Util::rollDice(1.0f)) {
+
+    if (Util::rollDice(0.1f)) {
         if (!speedUpPowerup->checkActive() && !slowMotionPowerup->checkActive()) {
             if (Util::rollDice(0.5f))
                 speedUpPowerup->start();
@@ -394,7 +390,7 @@ void BreakoutBoard::addPowerups() {
         }
     }
 
-    /*
+
     if (Util::rollDice(0.1f)) {
         if (!largeBallPowerup->checkActive() && !smallBallPowerup->checkActive()) {
             if (Util::rollDice(0.5f))
@@ -406,7 +402,5 @@ void BreakoutBoard::addPowerups() {
 
     if (Util::rollDice(0.1f))
         if (!lightsOutPowerup->checkActive()) lightsOutPowerup->start();
-        */
-
 
 }

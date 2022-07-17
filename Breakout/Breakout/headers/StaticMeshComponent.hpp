@@ -2,6 +2,9 @@
 #include "SceneComponent.hpp"
 #include "StaticMesh.hpp"
 
+/**
+ *  Component that instances a StaticMesh. Used for adding a static mesh to an object.
+ */
 class StaticMeshComponent : public SceneComponent {
     StaticMesh* mesh;
 public:

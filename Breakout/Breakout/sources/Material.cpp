@@ -27,6 +27,7 @@ void Material::setup() {
     for (auto& [type, texture] : textures) setupTexture(texture);
 
     applyTextures();
+    glUseProgram(0);
 }
 
 void Material::setTextureMap(TextureType type, const std::filesystem::path& path) {
@@ -35,10 +36,6 @@ void Material::setTextureMap(TextureType type, const std::filesystem::path& path
 }
 
 void Material::apply() {
-    shader->use();
-
-    //std::cout << "Applying material with shader: " << shader->ID << std::endl;
-
     glUniform3fv(glGetUniformLocation(shader->ID, "ambientColor"), 1, &ambient[0]);
     glUniform3fv(glGetUniformLocation(shader->ID, "diffuseColor"), 1, &diffuse[0]);
     glUniform3fv(glGetUniformLocation(shader->ID, "specularColor"), 1, &specular[0]);
@@ -80,4 +77,6 @@ void Material::setupTexture(Texture2D* texture) {
 
     glUniform1i(glGetUniformLocation(shader->ID, TextureTypeNames[texture->type].c_str()), texture->type);
     glUniform1i(glGetUniformLocation(shader->ID, std::string(TextureTypeNames[texture->type] + "Present").c_str()), 1);
+    
+    glUseProgram(0);
 }

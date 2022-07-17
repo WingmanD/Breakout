@@ -4,6 +4,9 @@
 #include <SDL_mixer.h>
 #include <string>
 
+/**
+ *  A class that holds a sound effect. Created from SoundEngine but can be played independently.
+ */
 class SoundCue {
     std::string name;
     Mix_Chunk* chunk;

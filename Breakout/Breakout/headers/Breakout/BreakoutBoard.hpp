@@ -132,30 +132,30 @@ class BreakoutBoard : public Player {
 
         BreakoutBoard* board;
 
-        bool isActive = false;
+        bool bIsActive = false;
 
         Powerup(BreakoutBoard* board, double duration, std::function<void(BreakoutBoard*)> newStartEffect,
                 std::function<void(BreakoutBoard*)> newEndEffect) : duration(duration), startEffect(
                                                                         std::move(newStartEffect)),
-                                                                    endEffect(std::move(newEndEffect)), board(board) {
-        }
+                                                                    endEffect(std::move(newEndEffect)), board(board) { }
 
         void start() {
-            isActive = true;
+            //std::cout << "Powerup start" << std::endl;
+            if (bIsActive) return;
+            bIsActive = true;
+            if (board->powerUpSound) board->powerUpSound->play(1);
             startTime = glfwGetTime();
             startEffect(board);
         }
 
         void stop() {
-            if(!isActive) return;
-            
-            isActive = false;
+            //std::cout << "Powerup stop" << std::endl;
+            if (!bIsActive) return;
+            bIsActive = false;
             endEffect(board);
         }
 
-        bool checkActive() {
-           return isActive && startTime + duration < glfwGetTime();
-        }
+        bool checkActive() { return bIsActive && startTime + duration > glfwGetTime(); }
     };
 
     StaticMeshComponent* background;
@@ -167,7 +167,6 @@ class BreakoutBoard : public Player {
 
     Paddle* paddle = nullptr;
 
-    
 
     StaticMesh* ballMesh = nullptr;
 
@@ -184,6 +183,8 @@ class BreakoutBoard : public Player {
     Powerup* speedUpPowerup = nullptr;
     Powerup* largeBallPowerup = nullptr;
     Powerup* smallBallPowerup = nullptr;
+
+    std::shared_ptr<SoundCue> powerUpSound = nullptr;
 
     int bricksLeft = 0;
 
@@ -231,7 +232,7 @@ private:
     void cellIndicesFromBallLocation(BreakoutBall* ball, int& row, int& column) const;
     void checkCollision(BreakoutBall* ball);
     void checkCollision(BreakoutBall* ball, int row, int column);
-    
+
     [[nodiscard]] glm::vec2 getCellCenter(int row, int column) const;
 
     void addPowerups();

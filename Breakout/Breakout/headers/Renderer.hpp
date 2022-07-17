@@ -11,6 +11,10 @@ struct LightDataEntry {
     float intensity;
 };
 
+/**
+ * Class that renders a scene with a variable number of point lights.
+ * 
+ */
 class Renderer {
     Scene* scene;
 
@@ -29,7 +33,7 @@ public:
     Renderer(Scene* scene);
 
     void render() const;
-
+    
     [[nodiscard]] bool isUnlit() const { return unlit; }
     [[nodiscard]] Scene* getScene() const { return scene; }
 

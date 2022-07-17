@@ -2,8 +2,11 @@
 
 #include "Transform.hpp"
 
-class Renderer;
 
+/**
+ *  Camera class that defines the view and projection matrices. It can adapt to current window width and height.
+ * 
+ */
 class Camera : public Transform {
     glm::vec3 center = glm::vec3(0, 0, 0);
     
@@ -27,7 +30,7 @@ public:
     void rotate(glm::vec3 rot);
 
     glm::mat4 getViewMatrix();
-    glm::mat4 getProjectionMatrix() const;
+    [[nodiscard]] glm::mat4 getProjectionMatrix() const;
 
     [[nodiscard]] glm::vec3 getViewUp() const;
     [[nodiscard]] glm::vec3 getFront() const;

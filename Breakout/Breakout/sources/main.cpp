@@ -10,7 +10,7 @@
 int main(int argc, char* argv[]) {
     // initialize engine and game mode
     Engine* engine = new Engine(std::filesystem::path(argv[0]).parent_path());
-    engine->setGameMode(new BreakoutGameMode(engine, 1));
+    engine->setGameMode(new BreakoutGameMode(engine, 5));
 
     // import background
     auto planeImport = StaticMesh::batchImport(engine->getRuntimePath() / "resources/meshes/plane/plane.obj",
@@ -23,17 +23,16 @@ int main(int argc, char* argv[]) {
                setTextureMap(
                    DIFFUSE,
                    engine->getRuntimePath() / "resources" /
-                   "meshes/plane/TexturesCom_MetalThreadplate5_512_albedo.png");
+                   "meshes/plane/WoodFineDark004_COL_4K.jpg");
     auto background = new StaticMeshComponent(planeMesh);
     background->attachTo(backgroundObject);
     backgroundObject->setLocation({
         0, -1, 0
     });
     backgroundObject->setScale({
-        100, 1, 100
+        5, 1, 5
     });
-    background->getMesh()->getMaterial()->setTextureScale({100, 100});
-    
+
     engine->getScene()->addObject(backgroundObject);
     engine->getRenderer()->setUnlit(true);
 

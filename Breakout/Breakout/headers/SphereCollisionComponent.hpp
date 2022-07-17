@@ -2,7 +2,7 @@
 #include "Collision.hpp"
 #include "SceneComponent.hpp"
 
-/*
+/**
  *  Sphere collision component that can be used to detect collisions with other collision components.
  * 
  */
@@ -12,13 +12,13 @@ public:
     explicit SphereCollisionComponent(const float radius)
         : radius(radius) {}
 
-    /*
+    /**
      * Check if this sphere collides with another collider.
      * 
      */
     CollisionResult collide(Collision* other) override;
 
-    /*
+    /**
      *  Check if point with global coordinates is inside this sphere.
      * 
      */

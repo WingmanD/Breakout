@@ -14,6 +14,7 @@ void PauseMenuWidget::setupUI() {
     auto size = ImGui::CalcTextSize("MAIN MENU");
     position = {(static_cast<float>(*width) - size.x) / 2, (static_cast<float>(*height) - size.y * 4) / 2};
 
+    ImGui::SetWindowSize({size.x * 1.5f, size.y * 6});
 
     ImGui::Text("PAUSED");
     ImGui::Separator();

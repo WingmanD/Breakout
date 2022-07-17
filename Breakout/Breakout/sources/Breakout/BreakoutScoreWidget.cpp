@@ -27,6 +27,4 @@ void BreakoutScoreWidget::setupUI() {
     ImVec2 levelTextSize = ImGui::CalcTextSize(levelText.c_str());
     ImGui::SameLine(static_cast<float>(*width) - levelTextSize.x * 1.5f);
     ImGui::Text("LEVEL: %d", *level);
-
-
 }

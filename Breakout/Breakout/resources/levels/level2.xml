@@ -3,7 +3,7 @@
         ColumnCount="20"
         RowSpacing="3"
         ColumnSpacing="3"
-        BackgroundTexture="meshes/plane/TexturesCom_MetalThreadplate5_512_albedo.png">
+        BackgroundTexture="meshes/plane/BrickWall_Albedo.png">
     <BrickTypes>
         <!-- Soft Brick -->
         <BrickType

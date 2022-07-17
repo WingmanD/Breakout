@@ -7,10 +7,12 @@
 #include "WidgetManager.hpp"
 
 #include "GLFW/glfw3.h"
-#include "glm/vec2.hpp"
 
 class GameMode;
 
+/**
+ *  Engine class that manages the game loop and the game mode. Initializes OpenGL and other subsystems. Handles game closing
+ */
 class Engine {
 
     std::filesystem::path runtimePath;
@@ -37,6 +39,9 @@ public:
 
     void possess(Player* player);
 
+    /**
+     * Get path to executable directory (where the game is run from) for relative paths for loading resources
+     */
     [[nodiscard]] std::filesystem::path getRuntimePath() const { return runtimePath; }
     [[nodiscard]] SoundEngine* getSoundEngine() const { return soundEngine; }
     [[nodiscard]] int getWidth() const { return width; }

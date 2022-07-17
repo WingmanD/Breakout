@@ -9,12 +9,15 @@ WonWidget::WonWidget(BreakoutGameMode* mode, int* windowWidth, int* windowHeight
 }
 
 void WonWidget::setupUI() {
-    auto size = ImGui::CalcTextSize("");
+    auto size = ImGui::CalcTextSize("Lives left:   ");
     position = {(static_cast<float>(*width) - size.x) / 2, (static_cast<float>(*height) - size.y * 4) / 2};
 
-    ImGui::Text("YOU WIN!");
+    ImGui::SetWindowSize({size.x * 1.5f, size.y * 10});
+    
+    ImGui::Text("YOU WON!");
     ImGui::Separator();
     ImGui::Text("Score: %d", gameMode->getScore());
+    ImGui::Text("Lives left: %d", gameMode->getLivesCount());
     ImGui::Separator();
     if (ImGui::Button("MAIN MENU")) { gameMode->openMainMenu(); }
     if (ImGui::Button("QUIT")) { gameMode->quit(); }

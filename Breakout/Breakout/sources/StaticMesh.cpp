@@ -13,6 +13,7 @@ StaticMesh::StaticMesh(const aiMesh* mesh, Material* material): material(materia
     vertices.reserve(mesh->mNumVertices);
     triangles.reserve(mesh->mNumFaces);
 
+    // load normals, vertex colors and texture coordinates if present
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
         vertices.emplace_back(i, mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
         if (mesh->HasNormals())
@@ -25,6 +26,7 @@ StaticMesh::StaticMesh(const aiMesh* mesh, Material* material): material(materia
             vertices[i].uv = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
     }
 
+    // load indices and triangles
     for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
         Vertex* v0 = &vertices[mesh->mFaces[i].mIndices[0]];
         Vertex* v1 = &vertices[mesh->mFaces[i].mIndices[1]];
@@ -40,12 +42,14 @@ StaticMesh::StaticMesh(const aiMesh* mesh, Material* material): material(materia
     indices.shrink_to_fit();
 
 
+    // if no normals are present, calculate them
     if (!mesh->HasNormals()) {
         const auto normals = calculateNormals();
         for (unsigned int i = 0; i < vertices.size(); i++)
             vertices[i].normal = normals[i];
     }
 
+    // calculate axis aligned bounding box, local space
     boundingBox = calculateBoundingBox();
 
     StaticMesh::init();
@@ -142,6 +146,7 @@ void StaticMesh::draw(const Transform& transform) {
     glUniformMatrix4fv(glGetUniformLocation(material->getShader()->ID, "model"), 1, GL_FALSE,
                        &transform.getModelMatrix()[0][0]);
 
+    material->apply();
     material->applyTextures();
 
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);

@@ -5,7 +5,7 @@
 class BreakoutBoard;
 
 /**
-* @brief The game mode for the Breakout game.
+* The game mode for the Breakout game.
 * Handles menus, breakout widgets and game logic.
 */
 class BreakoutGameMode : public GameMode {
@@ -25,6 +25,11 @@ class BreakoutGameMode : public GameMode {
 
     bool bInMainMenu = true;
     bool bEndScreen = false;
+
+    std::shared_ptr<SoundCue> lostBallCue;
+    std::shared_ptr<SoundCue> lostGameCue;
+    std::shared_ptr<SoundCue> wonGameCue;
+    
 public:
     explicit BreakoutGameMode(Engine* owner, int lives);
 

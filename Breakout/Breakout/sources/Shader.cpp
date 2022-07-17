@@ -8,10 +8,10 @@
 #include <glad/glad.h>
 
 
-Shader::Shader(std::filesystem::path path) { init(path); }
+Shader::Shader(std::filesystem::path shaderPath) { init(shaderPath); }
 
-void Shader::init(std::filesystem::path path) {
-    this->path = path;
+void Shader::init(std::filesystem::path shaderPath) {
+    this->path = shaderPath;
     ID = glCreateProgram();
 
     GLuint vertexShader, fragmentShader, geometryShader;
@@ -33,27 +33,25 @@ void Shader::init(std::filesystem::path path) {
     GLuint viewBlockIndex = glGetUniformBlockIndex(ID, "ViewData");
 
     glUniformBlockBinding(ID, viewBlockIndex, 0);
-
-    //std::cout << "Shader initialized ID: " << ID << std::endl;
 }
 
 
-bool Shader::readShader(std::filesystem::path path, ShaderType type, GLuint& shaderID) const {
+bool Shader::readShader(std::filesystem::path shaderPath, ShaderType type, GLuint& shaderID) const {
     GLuint shader;
     std::string shaderCode;
     const char* shaderSource;
 
     switch (type) {
     case VERTEX:
-        path += ".vert";
+        shaderPath += ".vert";
         shader = glCreateShader(GL_VERTEX_SHADER);
         break;
     case FRAGMENT:
-        path += ".frag";
+        shaderPath += ".frag";
         shader = glCreateShader(GL_FRAGMENT_SHADER);
         break;
     case GEOMETRY:
-        path += ".geom";
+        shaderPath += ".geom";
         shader = glCreateShader(GL_GEOMETRY_SHADER);
         break;
 
@@ -61,13 +59,13 @@ bool Shader::readShader(std::filesystem::path path, ShaderType type, GLuint& sha
     case COMPUTE: return false;
     }
 
-    if (!exists(path)) {
-        std::cerr << "Shader file " << path << " does not exist" << std::endl;
+    if (!exists(shaderPath)) {
+        std::cerr << "Shader file " << shaderPath << " does not exist" << std::endl;
         return false;
     }
 
     try {
-        std::ifstream shaderFile(path);
+        std::ifstream shaderFile(shaderPath);
         shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
         std::stringstream ss;
@@ -78,7 +76,7 @@ bool Shader::readShader(std::filesystem::path path, ShaderType type, GLuint& sha
         shaderSource = shaderCode.c_str();
     }
     catch (std::ifstream::failure& e) {
-        std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << path << std::endl;
+        std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << shaderPath << std::endl;
         std::cerr << e.what() << std::endl;
     }
 

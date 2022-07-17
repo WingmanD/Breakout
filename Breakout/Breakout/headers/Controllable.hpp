@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+/**
+ * Interface for objects that can take controls of the game.
+ *
+ */
 class Controllable {
 public:
     virtual void onMouseMove(double xpos, double ypos) {}

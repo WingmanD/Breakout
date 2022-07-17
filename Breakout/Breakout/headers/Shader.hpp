@@ -8,19 +8,22 @@ enum ShaderType { PROGRAM, VERTEX, FRAGMENT, GEOMETRY, COMPUTE };
 
 const std::string ShaderTypeStrings[] = {"PROGRAM", "VERTEX", "FRAGMENT", "GEOMETRY", "COMPUTE"};
 
+/**
+ *  A class for loading and compiling shaders.
+ */
 class Shader {
     static void checkCompilerErrors(unsigned shader, ShaderType type);
 
     std::filesystem::path path;
 
-    bool readShader(std::filesystem::path path, ShaderType type, GLuint& shaderID) const;
+    bool readShader(std::filesystem::path, ShaderType type, GLuint& shaderID) const;
 
-    void init(std::filesystem::path path);
+    void init(std::filesystem::path);
 
 public:
     unsigned int ID{};
 
-    Shader(std::filesystem::path path);
+    Shader(std::filesystem::path);
 
     Shader(const Shader& other) { init(other.path); }
 

@@ -6,6 +6,10 @@
 class Engine;
 class Component;
 
+/**
+ *  Object that can be added to scene. It can be transformed and drawn. Automatically draws children.
+ *  Base class for other custom objects.
+ */
 class Object : public Transform, public Drawable {
 protected:
     Engine* engine;

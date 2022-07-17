@@ -3,6 +3,7 @@
 
 Paddle::Paddle(Engine* const owner, const std::filesystem::path& meshPath, const std::filesystem::path& texturePath):
     Object(owner) {
+    // init components
     auto paddleMeshImport = StaticMesh::batchImport(meshPath,
                                                     new Material(
                                                         new Shader(engine->getRuntimePath() / "shaders/blinnPhong")));
@@ -18,7 +19,7 @@ Paddle::Paddle(Engine* const owner, const std::filesystem::path& meshPath, const
     boxCollision = new BoxCollisionComponent(paddleMesh->getBoundingBox());
     boxCollision->attachTo(meshComp);
 
-
+    // calculate halfHeight - used for ball placement on top of paddle
     auto boundingBox = paddleMesh->getBoundingBox();
     halfHeight = (boundingBox.max.z - boundingBox.min.z) / 2;
 }

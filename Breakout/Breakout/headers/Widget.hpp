@@ -6,14 +6,16 @@
 
 #include "glm/vec2.hpp"
 
+
+/**
+ *  Base class for ImGui widgets. Needs to be added manually to the engine's widget manager.
+ */
 class Widget : public Drawable {
 
 protected:
     bool bIsVisible = false;
     std::string name;
-
-    // todo position
-
+    
     int* width;
     int* height;
 
@@ -36,6 +38,9 @@ public:
 
     void draw(const Transform& transform) override {}
 
+    /**
+     *  Called when the widget is opened. Put ImGui code here.
+     */
     virtual void setupUI() = 0;
 
     [[nodiscard]] std::string getName() const { return name; }
@@ -48,5 +53,5 @@ public:
     void setWindowFlags(const ImGuiWindowFlags newWindowFlags) { windowFlags = newWindowFlags; }
     void setPosition(const glm::vec2& newPosition) { this->position = newPosition; }
 
-    virtual ~Widget() = default;
+    ~Widget() override = default;
 };

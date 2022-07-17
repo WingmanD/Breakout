@@ -7,6 +7,9 @@
 #include "Light.hpp"
 #include "Object.hpp"
 
+/**
+ *  The Scene class is used to store all the objects and lights in the scene.
+ */
 class Scene {
     std::vector<Object*> objects;
     std::vector<Light*> lights;

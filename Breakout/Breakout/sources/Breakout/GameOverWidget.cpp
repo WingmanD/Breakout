@@ -12,6 +12,8 @@ void GameOverWidget::setupUI() {
     auto size = ImGui::CalcTextSize("GAME OVER");
     position = {(static_cast<float>(*width) - size.x) / 2, (static_cast<float>(*height) - size.y * 4) / 2};
 
+    ImGui::SetWindowSize({size.x * 1.5f, size.y * 10});
+    
     ImGui::Text("GAME OVER");
     ImGui::Separator();
     ImGui::Text("Score: %d", gameMode->getScore());

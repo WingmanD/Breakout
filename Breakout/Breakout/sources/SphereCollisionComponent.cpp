@@ -10,7 +10,7 @@ CollisionResult SphereCollisionComponent::collide(Collision* other) {
     if (const auto otherSphere = dynamic_cast<SphereCollisionComponent*>(other)) {
         float distance = glm::distance(getGlobalLocation(), otherSphere->getGlobalLocation());
         if (distance < radius + otherSphere->radius) {
-            glm::vec3 normal = glm::normalize(getGlobalLocation() - otherSphere->getGlobalLocation());
+            glm::vec3 normal = normalize(getGlobalLocation() - otherSphere->getGlobalLocation());
             return {true, otherSphere->getGlobalLocation() + normal * otherSphere->radius, normal};
         }
     }

@@ -19,6 +19,7 @@ void Renderer::render() const {
 }
 
 inline void Renderer::initViewData() {
+    // init UBO for view data
     glGenBuffers(1, &UBO_ViewData);
 
     glBindBuffer(GL_UNIFORM_BUFFER, UBO_ViewData);
@@ -45,6 +46,7 @@ inline void Renderer::updateViewData() const {
 }
 
 inline void Renderer::initLightData() {
+    // init SSBO for light data
     glGenBuffers(1, &SSBO_LightData);
 
     updateLightData();

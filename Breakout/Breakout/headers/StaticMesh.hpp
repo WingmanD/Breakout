@@ -64,6 +64,10 @@ struct BoundingBox {
     glm::vec3 min, max;
 };
 
+/**
+ * Static mesh class holds vertex data and indices for a mesh. Can draw itself using a material.
+ * Does not have it's own transform as it is intended to be instanced - use draw(Transform* transform) to draw mesh at instance transform.
+ */
 class StaticMesh : public Drawable {
     GLuint VAO{};
     GLuint VBO[4]{};
@@ -144,13 +148,16 @@ public:
 
     [[nodiscard]] std::vector<glm::vec3> calculateNormals() const;
 
-    virtual ~StaticMesh() {
+    ~StaticMesh() override {
         glDeleteBuffers(4, VBO);
         glDeleteBuffers(1, &EBO);
         glDeleteVertexArrays(1, &VAO);
     }
 
 private:
+    /**
+     * Calculates the axis aligned bounding box of the mesh in local space.
+     */
     BoundingBox calculateBoundingBox() const;
 
 };

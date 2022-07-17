@@ -1,6 +1,9 @@
 ﻿#pragma once
 #include "Widget.hpp"
 
+/**
+ *  Engine subsystem for drawing widgets.
+ */
 class WidgetManager {
     std::vector<Widget*> widgets;
 public:

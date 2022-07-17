@@ -12,6 +12,7 @@ BreakoutBrick::BreakoutBrick(Engine* owner, int HP, int score, StaticMesh* mesh)
 }
 
 void BreakoutBrick::hit() {
+    // on hit, play sound, decrease HP, if HP is 0, destroy brick, add score and play sound
     if (hitSound)
         hitSound->play(0);
     
