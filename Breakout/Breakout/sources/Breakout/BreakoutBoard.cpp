@@ -28,7 +28,6 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
     cellHeight = brickHeight + static_cast<float>(level.rowSpacing) * brickHeight * 0.1f;
 
     boardWidth = static_cast<float>(level.columnCount) * cellWidth;
-    float boardHeight = static_cast<float>(level.rowCount) * cellHeight;
 
     // calculate board height (distance between top row of bricks and player) so that the whole board has aspect ratio of 16:9
     totalBoardHeight = 9 / 16.0f * boardWidth;
@@ -175,7 +174,7 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
                                        for (auto ball : board->balls) ball->setScale(glm::vec3(1.5f));
                                    },
                                    [](BreakoutBoard* board) {
-                                       for (auto ball : board->balls) ball->setScale(glm::vec3(1 / 1.5f));
+                                       for (auto ball : board->balls) ball->setScale(glm::vec3(1.0f));
                                    });
     smallBallPowerup = new Powerup(this, 5.0, [](BreakoutBoard* board) {
                                        for (auto ball : board->balls) ball->setScale(glm::vec3(1 / 1.5f));
