@@ -1,0 +1,47 @@
+﻿<Level
+        RowCount="6"
+        ColumnCount="20"
+        RowSpacing="1"
+        ColumnSpacing="1"
+        BackgroundTexture="meshes/plane/BrickWall_Albedo.png">
+    <BrickTypes>
+        <!-- Soft Brick -->
+        <BrickType
+                Id="S"
+                Texture="meshes/brick/textures/TexturesCom_WoodOldRough3_512_albedo.png"
+                HitPoints="1"
+                HitSound="audio/406266__anthousai__hit-hollow-03.wav"
+                BreakSound="audio/547042__eponn__hit-impact-sword-3.wav"
+                BreakScore="50"/>
+        <!-- Medium Brick -->
+        <BrickType
+                Id="M"
+                Texture="meshes/brick/textures/TexturesCom_ConcreteSidewalk01_1K_albedo.png"
+                HitPoints="2"
+                HitSound="audio/544389__department64__hits-concrete-02.wav"
+                BreakSound="audio/90386__tomkuhn__klirr.wav"
+                BreakScore="100"/>
+        <!-- Hard Brick -->
+        <BrickType
+                Id="H"
+                Texture="meshes/brick/textures/TexturesCom_StripedMarble_1K_albedo.png"
+                HitPoints="3"
+                HitSound="audio/324734__150112__whiteballhittingsolid.wav"
+                BreakSound="audio/583964__soundsnapfx__sledgehammer-using-to-break-a-block-of-concrete.wav"
+                BreakScore="150"/>
+        <!-- Impenetrable Brick -->
+        <BrickType
+                Id="I"
+                Texture="meshes/brick/textures/TexturesCom_OutdoorFloor3_1K_albedo.png"
+                HitPoints="Infinite"
+                HitSound="audio/406266__anthousai__hit-hollow-03.wav"/>
+    </BrickTypes>
+    <Bricks>
+        _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+        _ H S S S S S S S S S S S S S S S S H _
+        _ H _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ H _
+        _ H _ M _ M _ M _ M _ M _ M _ M _ _ H _
+        _ H _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ H _
+        _ H H H H H H H H H H H H H H H H H H _
+    </Bricks>
+</Level>
