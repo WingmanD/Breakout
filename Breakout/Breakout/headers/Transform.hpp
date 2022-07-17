@@ -124,5 +124,5 @@ public:
      */
     virtual void destroy();
 
-    virtual ~Transform() = default;
+    virtual ~Transform();
 };

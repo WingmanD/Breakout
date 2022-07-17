@@ -9,8 +9,3 @@ void StaticMeshComponent::draw() {
 void StaticMeshComponent::draw(const Transform& transform) { if (mesh) mesh->draw(transform); }
 
 void StaticMeshComponent::tick() { SceneComponent::tick(); }
-
-StaticMeshComponent::~StaticMeshComponent() {
-    // todo
-    // delete mesh;
-}

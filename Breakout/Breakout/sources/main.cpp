@@ -8,12 +8,11 @@
 #include "Breakout/BreakoutGameMode.hpp"
 
 int main(int argc, char* argv[]) {
-    std::string xmlPath = (std::filesystem::path(argv[0]).parent_path() / "resources/levels/level1.xml").string();
-
+    // initialize engine and game mode
     Engine* engine = new Engine(std::filesystem::path(argv[0]).parent_path());
-    engine->setGameMode(new BreakoutGameMode(engine, 5));
+    engine->setGameMode(new BreakoutGameMode(engine, 1));
 
-    
+    // import background
     auto planeImport = StaticMesh::batchImport(engine->getRuntimePath() / "resources/meshes/plane/plane.obj",
                                                new Material(
                                                    new Shader(engine->getRuntimePath() / "shaders/blinnPhong")));
@@ -34,10 +33,11 @@ int main(int argc, char* argv[]) {
         100, 1, 100
     });
     background->getMesh()->getMaterial()->setTextureScale({100, 100});
-
+    
     engine->getScene()->addObject(backgroundObject);
     engine->getRenderer()->setUnlit(true);
 
+    // add camera
     auto camera = new Camera(engine->getWidthRef(), engine->getHeightRef(), {0, 1, 0}, {0, 0, 0});
     engine->getScene()->setActiveCamera(camera);
     

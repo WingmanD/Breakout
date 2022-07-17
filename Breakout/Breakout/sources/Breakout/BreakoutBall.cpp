@@ -33,7 +33,8 @@ bool BreakoutBall::collideWith(Collision* other) {
 }
 
 void BreakoutBall::destroy() {
-    Object::destroy();
     engine->getScene()->removeLight(light);
     light->destroy();
+    
+    Object::destroy();
 }

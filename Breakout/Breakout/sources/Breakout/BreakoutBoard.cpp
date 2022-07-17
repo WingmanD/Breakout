@@ -85,7 +85,7 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
         std::shared_ptr<SoundCue> hitSound;
         std::shared_ptr<SoundCue> breakSound;
     };
-
+    
     std::map<std::string, BrickData> brickDataCache;
     for (auto [name, type] : level.brickTypeMap) {
         auto mesh = new StaticMesh(*brickMesh);
@@ -163,6 +163,7 @@ BreakoutBoard::BreakoutBoard(Engine* owningEngine, const BreakoutLevelInfo& leve
     light->setLocation({0, 1.0f, 0});
 
 
+    // initialize powerups
     lightsOutPowerup = new Powerup(this, 5.0, [](BreakoutBoard* board) {
                                        board->engine->getRenderer()->setUnlit(false);
                                    },
@@ -209,19 +210,23 @@ void BreakoutBoard::tick(double deltaTime) {
         applyBallMovement(PHYSICS_DELTA_TIME);
     applyBallMovement(lastIterLength);
 
+    // add balls that need to be added - this is required because we are iterating over that vector and can't add/remove
     if (!ballsToAdd.empty()) {
         for (auto newBall : ballsToAdd) balls.emplace_back(newBall);
         ballsToAdd.clear();
     }
 
+    // check powerups if they should be deactivated
     for (auto powerup : powerups) if (!powerup->checkActive()) powerup->stop();
 }
 
 void BreakoutBoard::onKey(int key, int scancode, int action, int mods) {
     // space key starts the game
-    if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE)
-        if (bPaused)
-            start();
+    if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
+        if (bPaused) { start(); }
+        else { std::cout << "cant start - board is not paused"; }
+    }
+    
 }
 
 void BreakoutBoard::onMouseMove(double xpos, double ypos) {
@@ -234,6 +239,7 @@ void BreakoutBoard::onMouseMove(double xpos, double ypos) {
 }
 
 void BreakoutBoard::onWindowSizeChange(int width, int height) {
+    // window size changed, resize background to fit the screen
     float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 
     boardSize = std::max(aspectRatio * 9.0f / 16.0f * boardWidth,
@@ -263,7 +269,10 @@ void BreakoutBoard::spawnBallAttached() {
 
 void BreakoutBoard::start() {
     // launch the ball in random direction
-    if (engine->getGameMode()->isPaused()) return;
+    if (engine->getGameMode()->isPaused()) {
+        std::cout << "cant start - gamemode is paused" << std::endl;
+        return;
+    }
 
     bPaused = false;
     for (auto ball : balls) {
@@ -375,6 +384,7 @@ void BreakoutBoard::applyBallMovement(float deltaTime) {
 }
 
 void BreakoutBoard::addPowerups() {
+    
     if (Util::rollDice(1.0f)) {
         if (!speedUpPowerup->checkActive() && !slowMotionPowerup->checkActive()) {
             if (Util::rollDice(0.5f))

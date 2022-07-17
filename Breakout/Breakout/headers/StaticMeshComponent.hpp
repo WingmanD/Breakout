@@ -16,6 +16,4 @@ public:
     void draw() override;
     void draw(const Transform& transform) override;
     void tick() override;
-    
-    ~StaticMeshComponent() override;
 };

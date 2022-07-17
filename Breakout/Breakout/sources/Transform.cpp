@@ -36,7 +36,7 @@ glm::vec3 Transform::getGlobalRotation() const {
 
 glm::vec3 Transform::getGlobalScale() const {
     if (!parent) return Scale;
-    
+
     return parent->getGlobalScale() * Scale;
 }
 
@@ -72,6 +72,13 @@ void Transform::detach() {
 }
 
 void Transform::destroy() {
+    std::vector<Transform*> childrenCopy = children;
+    for (auto child : childrenCopy) 
+        child->destroy();
+    
     detach();
-    for (auto child : children) child->destroy();
+}
+
+Transform::~Transform() {
+    destroy();
 }

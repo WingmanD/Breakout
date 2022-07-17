@@ -1,6 +1,6 @@
-﻿#include "Breakout/GameOverWidget.hpp"
+﻿#include "Breakout/WonWidget.hpp"
 
-GameOverWidget::GameOverWidget(BreakoutGameMode* mode, int* windowWidth, int* windowHeight): Widget("Game Over",
+WonWidget::WonWidget(BreakoutGameMode* mode, int* windowWidth, int* windowHeight): Widget("Game Over",
     windowWidth,
     windowHeight), gameMode(mode) {
     windowFlags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
@@ -8,14 +8,13 @@ GameOverWidget::GameOverWidget(BreakoutGameMode* mode, int* windowWidth, int* wi
         ImGuiWindowFlags_NoBringToFrontOnFocus;
 }
 
-void GameOverWidget::setupUI() {
-    auto size = ImGui::CalcTextSize("GAME OVER");
+void WonWidget::setupUI() {
+    auto size = ImGui::CalcTextSize("");
     position = {(static_cast<float>(*width) - size.x) / 2, (static_cast<float>(*height) - size.y * 4) / 2};
 
-    ImGui::Text("GAME OVER");
+    ImGui::Text("YOU WIN!");
     ImGui::Separator();
     ImGui::Text("Score: %d", gameMode->getScore());
-    ImGui::Text("Level: %d", gameMode->getLevel());
     ImGui::Separator();
     if (ImGui::Button("MAIN MENU")) { gameMode->openMainMenu(); }
     if (ImGui::Button("QUIT")) { gameMode->quit(); }

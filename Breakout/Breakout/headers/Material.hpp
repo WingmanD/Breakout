@@ -154,20 +154,47 @@ public:
     [[nodiscard]] glm::vec2 getTextureOffset() const { return textureOffset; }
 
 
-    //todo send to shader as well
     void setName(const std::string& newName) { this->name = newName; }
-    void setAmbient(const glm::vec3& newAmbient) { this->ambient = newAmbient; }
+
+    void setAmbient(const glm::vec3& newAmbient) {
+        this->ambient = newAmbient;
+        shader->use();
+        glUniform3fv(glGetUniformLocation(shader->ID, "ambientColor"), 1, &ambient[0]);
+        glUseProgram(0);
+    }
 
     void setDiffuse(const glm::vec3& newDiffuse) {
         this->diffuse = newDiffuse;
         shader->use();
         glUniform3fv(glGetUniformLocation(shader->ID, "diffuseColor"), 1, &diffuse[0]);
+        glUseProgram(0);
     }
 
-    void setSpecular(const glm::vec3& newSpecular) { this->specular = newSpecular; }
-    void setEmissive(const glm::vec3& newEmissive) { this->emissive = newEmissive; }
-    void setShininess(float newShininess) { this->shininess = newShininess; }
-    void setOpacity(float newOpacity) { this->opacity = newOpacity; }
+    void setSpecular(const glm::vec3& newSpecular) {
+        this->specular = newSpecular;
+        shader->use();
+        glUniform3fv(glGetUniformLocation(shader->ID, "specularColor"), 1, &specular[0]);
+        glUseProgram(0);
+    }
+
+    void setEmissive(const glm::vec3& newEmissive) {
+        this->emissive = newEmissive;
+        shader->use();
+        glUniform3fv(glGetUniformLocation(shader->ID, "emissiveColor"), 1, &emissive[0]);
+        glUseProgram(0);
+    }
+    void setShininess(float newShininess) {
+        this->shininess = newShininess;
+        shader->use();
+        glUniform1f(glGetUniformLocation(shader->ID, "shininess"), shininess);
+        glUseProgram(0);
+    }
+    void setOpacity(float newOpacity) {
+        this->opacity = newOpacity;
+        shader->use();
+        glUniform1f(glGetUniformLocation(shader->ID, "opacity"), opacity);
+        glUseProgram(0);
+    }
 
     void setTextureScale(const glm::vec2& newTextureScale) {
         this->textureScale = newTextureScale;

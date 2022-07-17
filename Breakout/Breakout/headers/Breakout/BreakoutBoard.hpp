@@ -231,6 +231,7 @@ private:
     void cellIndicesFromBallLocation(BreakoutBall* ball, int& row, int& column) const;
     void checkCollision(BreakoutBall* ball);
     void checkCollision(BreakoutBall* ball, int row, int column);
+    
     [[nodiscard]] glm::vec2 getCellCenter(int row, int column) const;
 
     void addPowerups();

@@ -18,8 +18,5 @@ public:
     void init() override {}
     void draw() override;
     void draw(const Transform& transform) override {}
-
-    virtual ~Object() {
-        Transform::destroy();
-    }
+    
 };
