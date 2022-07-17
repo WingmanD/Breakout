@@ -3,7 +3,6 @@
 #include <random>
 
 #include <glm/geometric.hpp>
-#include <glm/ext/quaternion_geometric.hpp>
 
 #include "StaticMesh.hpp"
 #include "GLFW/glfw3.h"

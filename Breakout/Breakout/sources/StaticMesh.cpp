@@ -1,6 +1,5 @@
 #include "StaticMesh.hpp"
 
-#include <glm/ext/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
 #include "Util.hpp"

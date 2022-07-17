@@ -271,8 +271,7 @@ void BreakoutBoard::start() {
 
 
         // set ball direction to upwards from player but randomize a little bit
-        ball->setVelocity({0, 0, -1});
-        //ball->setVelocity(normalize(glm::vec3(Util::random(-3.0f, 3.0f), 0.0f, -1.0f)));
+        ball->setVelocity(normalize(glm::vec3(Util::random(-3.0f, 3.0f), 0.0f, -1.0f)));
     }
 }
 

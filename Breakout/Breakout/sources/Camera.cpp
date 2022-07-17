@@ -1,6 +1,5 @@
 #include "Camera.hpp"
 
-#include <iostream>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
 

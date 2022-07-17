@@ -117,8 +117,6 @@ Shader::~Shader() {
     glDeleteProgram(ID);
 }
 
-
-// todo template this 
 void Shader::setUniform(const std::string& name, bool value) const {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), static_cast<int>(value));
 }
